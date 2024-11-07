@@ -15,9 +15,11 @@ const createContactUs = async (contactData) => {
 const getContactsUs = async (page, limit, sortOrder) => {
   try {
     const sort = sortOrder === 'desc' ? -1 : 1;
+    const skip = (page - 1) * limit;
+
     const messages = await ContactUsModel.find()
       .sort({"createdAt": sort})
-      .skip((page - 1) * limit)
+      .skip(skip)
       .limit(limit)
       .exec();
 
@@ -32,13 +34,19 @@ const getContactsUs = async (page, limit, sortOrder) => {
 
 const deleteContactUs = async (messageId) => {
   try {
+    const message = await ContactUsModel.findById(messageId);
+    if (!message){
+      console.log("right, haven't found the message")
+    }
+
     const deletedMessage = await ContactUsModel.findByIdAndDelete(messageId);
     if (!deletedMessage) {
+      console.log("the found contact: ", message)
       throw new Error('Message not found');
     }
     return deletedMessage;
   } catch (err) {
-    console.error('Error deleting message:', err);
+    console.error('Error deleting message in repo:', err);
     throw new Error('Error deleting the contact message');
   }
 };

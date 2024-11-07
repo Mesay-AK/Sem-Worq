@@ -3,6 +3,7 @@ const contactRepository = require('../adapters/Repositories/ContactUsRepo');
 const ContactUsEntity = require('../Domain/ContactUsEntity');
 
 
+
 const createContactUs = async (contactData) => {
   try {
     const contactEntity = new ContactUsEntity(contactData);
@@ -18,17 +19,15 @@ const createContactUs = async (contactData) => {
 const getContactsUseCase = async ({ page, limit, sortBy, sortingOrder }) => {
   try {
 
-    const skip = (page - 1) * limit;
-
-    const {contacts, totalItems} = await contactRepository.getContactsUs(
-      sortingOrder,
-      skip ,
-      limit)
+    const {messages, totalItems} = await contactRepository.getContactsUs(
+      page,
+      limit ,
+      sortingOrder)
 
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
-      contacts,
+      contacts:messages,
       totalPages,
       totalItems,
     };
@@ -39,11 +38,13 @@ const getContactsUseCase = async ({ page, limit, sortBy, sortingOrder }) => {
 };
 
 const deleteContactUsecase = async (messageId) => {
+  const objectId = mongoose.Types.ObjectId(messageId);
   try {
-    const deletedMessage = await contactRepository.deleteContactUs(messageId);
+    const deletedMessage = await contactRepository.deleteContactUs(objectId);
     return deletedMessage; 
   } catch (err) {
-    throw new Error('Error deleting message');
+    console.log("Error in deleteContactUsecase")
+    throw new Error('Error in message');
   }
 };
 
