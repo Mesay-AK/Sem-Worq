@@ -3,10 +3,20 @@ const bcrypt = require("bcryptjs");
 
 // Admin schema definition
 const adminSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    default: "admin", // Admin role by default
+  },
 });
-
 // Hash password before saving to DB
 adminSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
