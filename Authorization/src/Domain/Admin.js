@@ -8,6 +8,7 @@ const adminSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  email: { type: String, required: true, unique: true },
   password: {
     type: String,
     required: true,
@@ -16,6 +17,8 @@ const adminSchema = new mongoose.Schema({
     type: String,
     default: "admin", // Admin role by default
   },
+  resetToken: { type: String },
+  resetTokenExpiry: { type: Date },
 });
 // Hash password before saving to DB
 adminSchema.pre("save", async function (next) {

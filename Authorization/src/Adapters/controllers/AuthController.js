@@ -1,6 +1,7 @@
-
 const Admin = require("../../Domain/models/Admin");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const { sendPasswordResetEmail } = require("../../utils/emailService");
 
 class AuthController {
   // Signup logic
@@ -70,6 +71,58 @@ class AuthController {
       res
         .status(500)
         .json({ message: "Error logging in", error: error.message });
+    }
+  }
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+
+      const admin = await Admin.findOne({ email });
+      if (!admin) return res.status(404).json({ message: "Admin not found." });
+
+      const resetToken = crypto.randomBytes(32).toString("hex");
+      admin.resetToken = resetToken;
+      admin.resetTokenExpiry = Date.now() + 3600000;
+
+      await admin.save();
+
+      await sendPasswordResetEmail(admin.email, resetToken);
+
+      res.status(200).json({ message: "Password reset email sent." });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error sending reset email", error: error.message });
+    }
+  }
+
+  async resetPassword(req, res) {
+    try {
+      const { token, newPassword, confirmPassword } = req.body;
+
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ message: "Passwords do not match." });
+      }
+
+      const admin = await Admin.findOne({
+        resetToken: token,
+        resetTokenExpiry: { $gt: Date.now() },
+      });
+
+      if (!admin)
+        return res.status(400).json({ message: "Invalid or expired token." });
+
+      admin.password = newPassword;
+      admin.resetToken = null;
+      admin.resetTokenExpiry = null;
+
+      await admin.save();
+
+      res.status(200).json({ message: "Password reset successful." });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error resetting password", error: error.message });
     }
   }
 }
