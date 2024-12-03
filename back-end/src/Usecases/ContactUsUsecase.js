@@ -1,5 +1,4 @@
-// backend/src/domain/usecases/contactUseCases.js
-const contactRepository = require('../adapters/Repositories/ContactUsRepo');
+const contactRepository = require('../Repositories/ContactUsRepo');
 const ContactUsEntity = require('../Domain/ContactUsEntity');
 
 
@@ -16,7 +15,7 @@ const createContactUs = async (contactData) => {
   }
 };
 
-const getContactsUseCase = async ({ page, limit, sortBy, sortingOrder }) => {
+const getContactsUseCase = async ({ page, limit, sortingOrder }) => {
   try {
 
     const {messages, totalItems} = await contactRepository.getContactsUs(

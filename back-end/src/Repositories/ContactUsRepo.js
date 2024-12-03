@@ -1,4 +1,4 @@
-const ContactUsModel = require('../models/ContactUsModel');
+const ContactUsModel = require('../Infrastructures/models/ContactUsModel');
 
 const createContactUs = async (contactData) => {
   try {
