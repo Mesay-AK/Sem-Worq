@@ -1,9 +1,10 @@
 class BlogEntity{
-    constructor({title, content, author, tags,}){
+    constructor({title, content, author, tags,status}){
         this.title = title;
         this.content = content;
         this.author = author;
         this.tags = tags;
+        this.status = status;
 
     }
     validate(){
