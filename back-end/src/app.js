@@ -1,31 +1,50 @@
 const express = require('express');
-const dotenv = require('dotenv');
-const connectToDatabase = require('./Infrastructures/dataBase');
-const contactUsRouter = require('./adapters/Routes/ContactUsRoutes');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mongoose = require('mongoose');
+require('dotenv').config(); // Load environment variables
 
-dotenv.config();
+// Import routes
+const serviceRoutes = require('./adapters/Routes/ServiceRoutes');
+const contactRoutes = require('./adapters/Routes/ContactUsRoutes');
+const blogRoutes = require("./adapters/Routes/blogsRoutes")
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Middleware to parse JSON requests
-app.use(express.json());
+// Middleware setup
+app.use(cors());
+app.use(bodyParser.json()); // Parses incoming JSON requests
+app.use(bodyParser.urlencoded({ extended: true })); // Parses URL-encoded data
 
-// Route setup
-app.use('/api/contacts', contactUsRouter);
+// API routes
+app.use('/api/services', serviceRoutes); // Routes for 
+app.use('/api/contacts', contactRoutes); // Routes for contact-related APIs
+app.use('/api/blogs', blogRoutes);
 
-// Error handling middleware
+// Handle invalid routes
+// app.use((req, res, next) => {
+//   res.status(404).json({ message: 'Route not found' });
+// })
+
+// Error-handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!', error: err.message });
+  console.error('Error:', err.stack || err.message);
+  res.status(err.status || 500).json({
+    error: {
+      message: err.message || 'Internal Server Error',
+    },
+  });
 });
 
-connectToDatabase() 
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-    });
+    console.log('Connected to MongoDB');
+
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
-  .catch((error) => {
-    console.error('Failed to start server:', error.message);
+  .catch((err) => {
+    console.error('Database connection error:', err);
   });
+
+module.exports = app;
