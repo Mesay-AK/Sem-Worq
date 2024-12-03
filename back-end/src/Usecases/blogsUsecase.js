@@ -1,5 +1,5 @@
 // usecases/BlogUseCase.js
-const BlogEntity = require('../entities/BlogEntity');
+const BlogEntity = require('../Domain/blogEntity');
 
 class BlogUseCase {
     constructor(blogRepository) {
@@ -29,7 +29,10 @@ class BlogUseCase {
         if (!existingBlog) {
             throw new Error("Blog not found");
         }
-        return await this.blogRepository.delete(id);
+        const deletedBlog =  await this.blogRepository.delete(id);
+        console.log("usecase : ", deletedBlog)
+
+        return deletedBlog
     }
 
     async getBlog(id) {
@@ -41,7 +44,7 @@ class BlogUseCase {
     }
 
     async listBlogs(filters = {}, page = 1, limit = 10) {
-        
+
         const blogs = await this.blogRepository.findAll(filters, page, limit);
         const total = await this.blogRepository.count(filters);
 

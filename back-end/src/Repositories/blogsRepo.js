@@ -1,5 +1,5 @@
 // repositories/BlogRepository.js
-const BlogModel = require('../models/BlogModel');
+const BlogModel = require('../Infrastructures/models/blogModel');
 
 class BlogRepository {
     async create(blogData) {
@@ -13,7 +13,18 @@ class BlogRepository {
     }
 
     async delete(id) {
-        return await BlogModel.findByIdAndDelete(id);
+    try{
+        const deletedBlog = await BlogModel.findByIdAndDelete(id);
+        if (!deletedBlog) {
+        throw new Error('Blog not found');
+        }
+        console.log("repository : ", deletedBlog)
+        return deletedBlog;
+    } catch (err) {
+    console.error('Error deleting blog in repo:', err);
+    throw new Error('Error deleting blog');
+  } 
+        
     }
 
     async findById(id) {

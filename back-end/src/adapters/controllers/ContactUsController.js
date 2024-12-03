@@ -29,7 +29,6 @@ const getContactsController = async (req, res) => {
       limit: validatedLimit,
       sortingOrder: validatedSortingOrder,
     });
-console.log(contacts)
 res.status(200).json({
   pagination: {
     currentPage: validatedPage,
@@ -47,19 +46,13 @@ res.status(200).json({
 const deleteContactController = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("Received messageId:", id);
 
-    // Validate `messageId` format and log the result
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.isValidObjectId(id))  {
       console.error("Invalid ObjectId format for messageId:", id);
       return res.status(400).json({ message: 'Invalid message ID' });
     }
-
-
-    const objectId = new mongoose.Types.ObjectId(id);
-    console.log("Converted ObjectId:", objectId);
-
-    const deletedMessage = await contactUseCases.deleteContactUsecase(objectId);
+    
+    const deletedMessage = await contactUseCases.deleteContactUsecase(id);
 
     if (!deletedMessage) {
       console.log("Document with messageId not found:", messageId);
@@ -67,6 +60,7 @@ const deleteContactController = async (req, res) => {
     }
 
     res.status(200).json({ message: 'Message deleted successfully', deletedMessage });
+
   } catch (err) {
     console.error('Error in deleteContactController:', err);
     res.status(500).json({ message: `Error: ${err.message}` });

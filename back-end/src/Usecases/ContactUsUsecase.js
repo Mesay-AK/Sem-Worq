@@ -1,5 +1,6 @@
 const contactRepository = require('../Repositories/ContactUsRepo');
 const ContactUsEntity = require('../Domain/ContactUsEntity');
+const mongoose = require('mongoose')
 
 
 
@@ -36,11 +37,12 @@ const getContactsUseCase = async ({ page, limit, sortingOrder }) => {
   }
 };
 
-const deleteContactUsecase = async (messageId) => {
-  const objectId = mongoose.Types.ObjectId(messageId);
+
+const deleteContactUsecase = async (objectId) => {
   try {
     const deletedMessage = await contactRepository.deleteContactUs(objectId);
     return deletedMessage; 
+
   } catch (err) {
     console.log("Error in deleteContactUsecase")
     throw new Error('Error in message');

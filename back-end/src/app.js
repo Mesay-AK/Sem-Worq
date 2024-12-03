@@ -7,6 +7,7 @@ require('dotenv').config(); // Load environment variables
 // Import routes
 const serviceRoutes = require('./adapters/Routes/ServiceRoutes');
 const contactRoutes = require('./adapters/Routes/ContactUsRoutes');
+const blogRoutes = require("./adapters/Routes/blogsRoutes")
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // Parses URL-encoded data
 // API routes
 app.use('/api/services', serviceRoutes); // Routes for 
 app.use('/api/contacts', contactRoutes); // Routes for contact-related APIs
+app.use('/api/blogs', blogRoutes);
 
 // Handle invalid routes
 // app.use((req, res, next) => {

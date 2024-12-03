@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 class BlogController {
     constructor(blogUseCase) {
         this.blogUseCase = blogUseCase;
@@ -5,9 +6,9 @@ class BlogController {
 
     async createBlog(req, res) {
         try {
-            if (!req.user || !req.user.isAdmin) {
-                return res.status(403).json({ message: "Forbidden: Admin access only" });
-            }
+            // if (!req.user || !req.user.isAdmin) {
+            //     return res.status(403).json({ message: "Forbidden: Admin access only" });
+            // }
 
             const blog = await this.blogUseCase.createBlog(req.body);
             res.status(201).json(blog);
@@ -18,9 +19,9 @@ class BlogController {
 
     async updateBlog(req, res) {
         try {
-            if (!req.user || !req.user.isAdmin) {
-                return res.status(403).json({ message: "Forbidden: Admin access only" });
-            }
+            // if (!req.user || !req.user.isAdmin) {
+            //     return res.status(403).json({ message: "Forbidden: Admin access only" });
+            // }
 
             const updatedBlog = await this.blogUseCase.updateBlog(req.params.id, req.body);
             res.json(updatedBlog);
@@ -31,12 +32,23 @@ class BlogController {
 
     async deleteBlog(req, res) {
         try {
-            if (!req.user || !req.user.isAdmin) {
-                return res.status(403).json({ message: "Forbidden: Admin access only" });
+        
+            const { id } = req.params;
+
+            if (!mongoose.isValidObjectId(id))  {
+            console.error("Invalid ObjectId format for blogId:", id);
+                return res.status(400).json({ message: 'Invalid blog ID' });
             }
 
-            await this.blogUseCase.deleteBlog(req.params.id);
-            res.status(204).send();
+            const deletedBlog = await this.blogUseCase.deleteBlog(id);
+            if (!deletedBlog){
+                console.log("Document with blogId not found:", id);
+                return res.status(404).json({message: "Blog not found"})
+            }
+            console.log("controller : ",deletedBlog)
+
+            res.status(204).json({ message: 'Blog deleted successfully', deletedBlog });
+
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
@@ -55,11 +67,11 @@ class BlogController {
         try {
             const filters = {};
 
-            const isAdmin = req.user && req.user.role === 'admin'; 
+            // const isAdmin = req.user && req.user.role === 'admin'; 
             
-            if (!isAdmin && req.query.status && req.query.status === 'draft') {
-                return res.status(403).json({ error: 'You are not authorized to view draft blogs.' });
-            }
+            // if (!isAdmin && req.query.status && req.query.status === 'draft') {
+            //     return res.status(403).json({ error: 'You are not authorized to view draft blogs.' });
+            // }
 
             if (req.query.author) {
                 filters.author = req.query.author;
@@ -68,10 +80,11 @@ class BlogController {
     
             if (req.query.status) {
                 filters.status = req.query.status;
-            } else if (!isAdmin) {
+            } 
+            // else if (!isAdmin) {
 
-                filters.status = 'published';
-            }
+            //     filters.status = 'published';
+            // }
 
             if (req.query.tags) {
                 filters.tags = { $in: req.query.tags.split(',') };
