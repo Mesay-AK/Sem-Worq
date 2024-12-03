@@ -41,13 +41,14 @@ class BlogController {
             }
 
             const deletedBlog = await this.blogUseCase.deleteBlog(id);
+
             if (!deletedBlog){
                 console.log("Document with blogId not found:", id);
                 return res.status(404).json({message: "Blog not found"})
             }
-            console.log("controller : ",deletedBlog)
+            
 
-            res.status(204).json({ message: 'Blog deleted successfully', deletedBlog });
+            res.status(200).json({ message: 'Blog deleted successfully', deletedBlog });
 
         } catch (error) {
             res.status(400).json({ error: error.message });
