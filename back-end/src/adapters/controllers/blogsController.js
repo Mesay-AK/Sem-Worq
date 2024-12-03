@@ -6,9 +6,6 @@ class BlogController {
 
     async createBlog(req, res) {
         try {
-            // if (!req.user || !req.user.isAdmin) {
-            //     return res.status(403).json({ message: "Forbidden: Admin access only" });
-            // }
 
             const blog = await this.blogUseCase.createBlog(req.body);
             res.status(201).json(blog);
@@ -19,11 +16,8 @@ class BlogController {
 
     async updateBlog(req, res) {
         try {
-            // if (!req.user || !req.user.isAdmin) {
-            //     return res.status(403).json({ message: "Forbidden: Admin access only" });
-            // }
 
-            const updatedBlog = await this.blogUseCase.updateBlog(req.params.id, req.body);
+        const updatedBlog = await this.blogUseCase.updateBlog(req.params.id, req.body);
             res.json(updatedBlog);
         } catch (error) {
             res.status(400).json({ error: error.message });
