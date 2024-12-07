@@ -11,7 +11,7 @@ class ServiceController {
         return res.status(400).json({ message: "Title and description are required." });
       }
 
-      const newService = await this.serviceUseCases.CreateService({ title, description });
+      const newService = await this.serviceUseCases.createService({ title, description });
       res.status(201).json(newService);
     } catch (err) {
       console.error("Controller error (createService):", err.message);
@@ -24,7 +24,7 @@ class ServiceController {
       const { id } = req.params;
       const updatedFields = req.body;
 
-      const updatedService = await this.serviceUseCases.UpdateService(id, updatedFields);
+      const updatedService = await this.serviceUseCases.updateService(id, updatedFields);
       res.status(200).json(updatedService);
     } catch (err) {
       console.error("Controller error (updateService):", err.message);
@@ -36,7 +36,7 @@ class ServiceController {
     try {
       const { id } = req.params;
 
-      await this.serviceUseCases.DeleteService(id);
+      await this.serviceUseCases.deleteService(id);
       res.status(200).json({ message: "Service deleted successfully" });
     } catch (err) {
       console.error("Controller error (deleteService):", err.message);
@@ -46,7 +46,7 @@ class ServiceController {
 
   async listServices(req, res) {
     try {
-      const services = await this.serviceUseCases.ListAllServices();
+      const services = await this.serviceUseCases.listAllServices();
       res.status(200).json(services);
     } catch (err) {
       console.error("Controller error (listServices):", err.message);

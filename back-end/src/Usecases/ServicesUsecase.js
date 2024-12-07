@@ -12,8 +12,10 @@ class ServiceUseCase {
 
       const newService = new Service(serviceEntity);
       return await this.serviceRepo.CreateService(newService);
+      
     } catch (error) {
-      throw new Error(`Use case error: Unable to create service. ${error.message}`);
+      console.log("usecase error", error)
+      throw error;
     }
   }
 
