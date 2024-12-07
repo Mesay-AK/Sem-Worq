@@ -9,9 +9,9 @@ const controller = new testimonialController(usecase)
 
 const router = express.Router();
 
-router.post('/', controller.createTestimonial);
-router.get('/', controller.listTestimonials);
-router.put('/testimonials/:id', controller.updateTestimonial);
+router.post('/create', controller.createTestimonial);
+router.get('/get', controller.listTestimonials);
+router.put('/edit/:id', controller.updateTestimonial);
 router.delete('/testimonials/:id', controller.deleteTestimonial);
 
 module.exports = router;

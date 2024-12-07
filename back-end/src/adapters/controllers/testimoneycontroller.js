@@ -61,4 +61,4 @@ class TestimonialController {
     }
 }
 
-module.exports = new TestimonialController();
+module.exports = TestimonialController;

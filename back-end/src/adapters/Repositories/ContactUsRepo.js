@@ -6,6 +6,7 @@ const createContactUs = async (contactData) => {
     await newMessage.save();
     return newMessage; 
   } catch (err) {
+    
     console.error('Error saving message:', err);
     throw new Error('Error saving the contact message');
   }

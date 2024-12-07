@@ -2,7 +2,7 @@ const TestimonialEntity = require('../Domain/testimoneyEntity');
 
 class TestimonialUseCase {
     constructor(repository){
-        this.this.testimoinialRepository = repository;
+        this.testimoinialRepository = repository;
     }
     async createTestimonial(testimonialData) {
         try {
@@ -12,7 +12,7 @@ class TestimonialUseCase {
             return result;
         } catch (error) {
             console.error("Error in TestimonialUseCase.createTestimonial:", error);
-            throw new Error("Failed to create testimonial.");
+            throw err;
         }
     }
 
@@ -58,4 +58,4 @@ class TestimonialUseCase {
     }
 }
 
-module.exports = new TestimonialUseCase();
+module.exports =  TestimonialUseCase;
