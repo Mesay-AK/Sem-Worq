@@ -1,17 +1,20 @@
 const express = require('express');
-const testimonialController = require('../controllers/testimoneycontroller');
-const testimoninalUsecase = require('../../Usecases/testimoneyUsecase');
-const testimoinialRepository = require('../Repositories/testimoneyRepo');
 
-const repo = new testimoinialRepository();
-const usecase = new testimoninalUsecase(repo);
-const controller = new testimonialController(usecase)
+const TestimonialController = require('../controllers/testimoneycontroller');
+const TestimonialUsecase = require('../../Usecases/testimoneyUsecase');
+const TestimonialRepository = require('../../adapters/Repositories/testimoneyRepo');
+
+
+const repo = new TestimonialRepository();
+const usecase = new TestimonialUsecase(repo);
+const controller = new TestimonialController(usecase);
 
 const router = express.Router();
 
-router.post('/create', controller.createTestimonial);
-router.get('/get', controller.listTestimonials);
-router.put('/edit/:id', controller.updateTestimonial);
-router.delete('/testimonials/:id', controller.deleteTestimonial);
+
+router.post('/create', (req, res) => controller.createTestimonial(req, res)); 
+router.get('/get', (req, res) => controller.listTestimonials(req, res));      
+router.put('/edit/:id', (req, res) => controller.updateTestimonial(req, res)); 
+router.delete('/delete/:id', (req, res) => controller.deleteTestimonial(req, res)); 
 
 module.exports = router;

@@ -3,20 +3,22 @@ const Testimonial = require('../models/testimoneyModel');
 class TestimonialRepository {
     async create(testimonialData) {
         try {
-            const existTestimony = await Testimonial.findOne(testimonial);
-            if (existTestimony){
-                throw new Error("Testimony already exists")
-            }
-            
+
             const testimonial = new Testimonial(testimonialData);
 
-            return await Testimonial.save();
+            const existTestimony = await Testimonial.findOne(testimonialData);
 
+            if (existTestimony) {
+                throw new Error("Testimonial already exists");
+            }
+
+            return await testimonial.save(); 
         } catch (error) {
             console.error("Error in TestimonialRepository.create:", error);
-            throw new Error("Failed to create testimonial.");
+            throw error;
         }
     }
+
 
     async findAll(filters = {}, page = 1, limit = 10) {
         try {
@@ -27,7 +29,7 @@ class TestimonialRepository {
                 .sort({ createdAt: -1 });
 
         } catch (error) {
-            
+
             console.error("Error in TestimonialRepository.findAll:", error);
             throw new Error("Failed to fetch testimonials.");
         }

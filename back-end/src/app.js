@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Route setup
 app.use('/api/contacts', contactUsRouter);
-app.use('api/testimonials', testmonyRoute);
+app.use('/api/testimonials', testmonyRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

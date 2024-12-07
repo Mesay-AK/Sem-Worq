@@ -8,11 +8,13 @@ class TestimonialUseCase {
         try {
             const testimonialEntity = new TestimonialEntity(testimonialData);
             testimonialEntity.validate();
+            
             const result = await this.testimoinialRepository.create(testimonialData);
             return result;
+
         } catch (error) {
             console.error("Error in TestimonialUseCase.createTestimonial:", error);
-            throw err;
+            throw error;
         }
     }
 
