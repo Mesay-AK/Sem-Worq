@@ -1,7 +1,7 @@
 const Service = require("../Domain/ServicesEntity")
 
 class ServiceUseCase {
-  constructor(serviceRepo, ServiceEntity) {
+  constructor(serviceRepo) {
     this.serviceRepo = serviceRepo;
   }
 

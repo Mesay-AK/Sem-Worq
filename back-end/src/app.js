@@ -7,6 +7,7 @@ require('dotenv').config(); // Load environment variables
 // Import routes
 const serviceRoutes = require('./adapters/Routes/ServiceRoutes');
 const contactRoutes = require('./adapters/Routes/ContactUsRoutes');
+const portfolioRoutes = require('./adapters/Routes/portfolioRoutes')
 
 const app = express();
 
@@ -16,13 +17,14 @@ app.use(bodyParser.json()); // Parses incoming JSON requests
 app.use(bodyParser.urlencoded({ extended: true })); // Parses URL-encoded data
 
 // API routes
-app.use('/api/services', serviceRoutes); // Routes for 
-app.use('/api/contacts', contactRoutes); // Routes for contact-related APIs
+app.use('/api/services', serviceRoutes); 
+app.use('/api/contacts', contactRoutes); 
+app.use('/api/portfolio', portfolioRoutes);
 
 // Handle invalid routes
-// app.use((req, res, next) => {
-//   res.status(404).json({ message: 'Route not found' });
-// })
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Page not found' });
+})
 
 // Error-handling middleware
 app.use((err, req, res, next) => {
