@@ -3,6 +3,11 @@ const BlogModel = require('../Infrastructures/models/blogModel');
 
 class BlogRepository {
     async create(blogData) {
+        const blogExists = BlogModel.findOne(blogData);
+
+        if (blogExists){
+            throw new Error("Blog already Exists")
+        }
         const blog = new BlogModel(blogData);
         return await blog.save();
     }
