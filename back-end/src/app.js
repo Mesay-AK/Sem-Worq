@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectToDatabase = require('./Infrastructures/dataBase');
 const contactUsRouter = require('./adapters/Routes/ContactUsRoutes');
+const testimonyRoute = require('./adapters/Routes/testimonyRoute');
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 // Route setup
 app.use('/api/contacts', contactUsRouter);
+app.use('app/testimonials', testimonyRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
