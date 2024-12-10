@@ -1,7 +1,9 @@
+const AdminRepository = require('./../Repositories/AdminRepository')
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-dotenv.config();
+const dotenv = require('dotenv')
+dotenv.config({ path: '../.env' });
 
+const AdminRepo = new AdminRepository()
 const connectToDatabase = async () => {
   try {
 
@@ -9,10 +11,13 @@ const connectToDatabase = async () => {
     if (!mongoURI) {
       throw new Error('MONGO_URI is not defined in environment variables');
     }
-
+    
     await mongoose.connect(mongoURI);
+    AdminRepo.createFirstAdmin();
 
     console.log('Connected to MongoDB');
+
+    
   } catch (error) {
     console.error('Error connecting to MongoDB:', error.message);
   
@@ -20,5 +25,6 @@ const connectToDatabase = async () => {
   }
 };
 
-// Export the connectToDatabase function
 module.exports = connectToDatabase;
+
+

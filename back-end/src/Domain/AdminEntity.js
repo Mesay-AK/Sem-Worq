@@ -1,15 +1,16 @@
-class UserEntity {
-    constructor({ name, email, password, role, refreshTokens = [] }) {
+class AdminEntity {
+    constructor({ name, email, password, role = 'admin', refreshTokens = [] ,resetToken = ''}) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
-        this.refreshTokens = refreshTokens;
+        this.refreshTokens = refreshTokens; 
+        this.resetToken = resetToken;
     }
 
     validate() {
         if (!this.name || this.name.trim().length < 3) {
-            throw new Error("User name must be at least 3 characters long.");
+            throw new Error("Admin name must be at least 3 characters long.");
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,16 +22,16 @@ class UserEntity {
             throw new Error("Password must be at least 8 characters long.");
         }
 
-        if (!['admin', 'user'].includes(this.role)) {
-            throw new Error("Role must be either 'admin' or 'user'.");
+    }
+    validateResetPasswordFields() {
+        if (!this.resetToken) {
+            throw new Error("Reset token is required.");
+        }
+        if (!this.password || this.password.length < 8) {
+            throw new Error("Password must be at least 8 characters long.");
         }
     }
 
-    validatePasswordReset(newPassword) {
-        if (!newPassword || newPassword.length < 8) {
-            throw new Error("New password must be at least 8 characters long.");
-        }
-    }
+
 }
-
-module.exports = UserEntity;
+module.exports = AdminEntity;
