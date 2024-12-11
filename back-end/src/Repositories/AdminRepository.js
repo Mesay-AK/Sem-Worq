@@ -3,7 +3,6 @@ const PasswordHelper = require('../Infrastructures/helpers/password-helper')
 const AdminEntity = require('../Domain/AdminEntity')
 
 class AdminRepository {
-
     async createFirstAdmin() {
 
     const admins = await this.countAdmins()
