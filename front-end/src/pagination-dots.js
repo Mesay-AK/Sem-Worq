@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 function Dots() {
-  // Manage slides and currentIndex internally
+  
   const slides = ["Slide 1", "Slide 2", "Slide 3"]; // Define the slides array here
   const [currentIndex, setCurrentIndex] = useState(0);
 
