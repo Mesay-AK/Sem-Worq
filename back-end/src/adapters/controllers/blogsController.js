@@ -97,6 +97,83 @@ class BlogController {
         }
     }
 
+    async addComment(req, res) {
+        try {
+            const { blogId } = req.params;
+            const { email, content } = req.body;
+            const updatedBlog = await this.blogUseCase.addComment({blogId, email, content});
+            res.status(200).json(updatedBlog);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async removeComment(req, res) {
+        try {
+            const { blogId, commentId } = req.params;
+            const updatedBlog = await this.blogUseCase.removeComment(blogId, commentId);
+            res.status(200).json(updatedBlog);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async addLike(req, res) {
+        try {
+            const ipAddress = req.headers['x-forwarded-for'] || req.ip;  // 
+            const { blogId } = req.body;
+
+            const updatedBlog = await this.blogUseCase.addFeedback(blogId, ipAddress, liked);
+
+            res.status(200).json({ message: "Like added successfully", data: updatedBlog });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async addDislike(req, res) {
+        try {
+            const ipAddress = req.headers['x-forwarded-for'] || req.ip;  
+            const { blogId } = req.body;
+
+            const updatedBlog = await this.blogUseCase.addFeedback(blogId, ipAddress, disliked);
+
+            res.status(200).json({ message: "Dislike added successfully", data: updatedBlog });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async getComments(req, res) {
+        try {
+            const { blogId } = req.params;
+            const comments = await this.blogUseCase.getComments(blogId);
+            res.status(200).json(comments);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async getLikes(req, res) {
+        try {
+            const { blogId } = req.params;
+            const likes = await this.blogUseCase.getLikes(blogId);
+            res.status(200).json({ count: likes.length, likes });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async getDislikes(req, res) {
+        try {
+            const { blogId } = req.params;
+            const dislikes = await this.blogUseCase.getDislikes(blogId);
+            res.status(200).json({ count: dislikes.length, dislikes });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
 }
 
 module.exports = BlogController;

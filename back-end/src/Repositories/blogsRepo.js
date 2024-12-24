@@ -1,4 +1,3 @@
-// repositories/BlogRepository.js
 const BlogModel = require('../Infrastructures/models/blogModel');
 
 class BlogRepository {
@@ -47,6 +46,58 @@ class BlogRepository {
     async count(filters = {}) {
         return await BlogModel.countDocuments(filters);
     }
+
+    async addComment(blogId, commentData) {
+        return await Blog.findByIdAndUpdate(blogId, 
+            { $push: { comments: commentData } }, 
+            { new: true });
+    }
+
+    async removeComment(blogId, commentId) {
+        return await Blog.findByIdAndUpdate(blogId, 
+            { $pull: { comments: { _id: commentId } } }, 
+            { new: true });
+    }
+    async getComments(blogId) {
+        const blog = await Blog.findById(blogId).select('comments');
+        if (!blog) {
+            throw new Error("Blog not found.");
+        }
+        return blog.comments;
+    }
+
+
+    async addFeedback(blogId, feedback){
+        
+        const updatedFeedback = await BlogModel.findByIdAndUpdate(blogId, feedback, {new: true})
+
+        if (!updatedFeedback){
+            throw new Error("Error while updating feedback")
+        }
+        
+        return updatedFeedback
+
+    }
+
+    async getLikes(blogId) {
+        const blog = await Blog.findById(blogId).select('likeCount');
+        if (!blog) {
+            throw new Error("Blog not found.");
+        }
+        return blog.likeCount;
+    }
+
+    async getDislikes(blogId) {
+        const blog = await Blog.findById(blogId).select('dislikCount');
+        if (!blog) {
+            throw new Error("Blog not found.");
+        }
+        return blog.dislikeCount;
+    }
+
+
+
+
 }
 
 module.exports = BlogRepository;
