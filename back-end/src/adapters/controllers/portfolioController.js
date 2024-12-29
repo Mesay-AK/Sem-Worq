@@ -1,6 +1,7 @@
+const PortfolioEntity = require('../../Domain/portfolioEntity')
 class PortfolioController {
-    constructor(portfolioUseCase) {
-        this.portfolioUseCase = portfolioUseCase;
+    constructor(repository) {
+        this.repository = repository;
     }
 
     async listPortfolios(req, res) {
@@ -9,7 +10,6 @@ class PortfolioController {
             if (req.query.visibility) {
                 filters.visibility = req.query.visibility;
             }
-
             if (req.query.tags) {
                 filters.tags = { $in: req.query.tags.split(",") };
             }
@@ -17,7 +17,18 @@ class PortfolioController {
             const page = parseInt(req.query.page, 10) || 1;
             const limit = parseInt(req.query.limit, 10) || 10;
 
-            const result = await this.portfolioUseCase.listPortfolios(filters, page, limit);
+            const portfolios = await this.repository.findAll(filters, page, limit);
+            const total = await this.repository.count(filters);
+
+            const result = {
+                portfolios,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
+                },
+            };
             res.json(result);
 
         } catch (error) {
@@ -28,7 +39,12 @@ class PortfolioController {
 
     async createPortfolio(req, res) {
         try {
-            const result = await this.portfolioUseCase.createPortfolio(req.body);
+
+            const newPortfolio = req.body
+            const portfolioEntity = new PortfolioEntity(newPortfolio);
+            portfolioEntity.validate();
+            
+            const result =  await this.repository.create(newPortfolio);
             res.status(201).json(result);
 
         } catch (error) {
@@ -39,8 +55,12 @@ class PortfolioController {
 
     async updatePortfolio(req, res) {
         try {
-            const result = await this.portfolioUseCase.updatePortfolio(req.params.id, req.body);
-            res.json(result);
+            const updatedPortfolio = req.body
+            const portfolioEntity = new PortfolioEntity(updatedPortfolio);
+            portfolioEntity.validateOnUpdate();
+
+            const result = await this.repository.updateById(id, updatedPortfolio);
+            res.json({message: "portlolio Updated Successfully.", updated: result});
 
         } catch (error) {
             console.error("Error in PortfolioController.updatePortfolio:", error);
@@ -50,7 +70,8 @@ class PortfolioController {
 
     async deletePortfolio(req, res) {
         try {
-            const result = await this.portfolioUseCase.deletePortfolio(req.params.id);
+            const {id} = req.params.id;
+            const result = await this.repository.deleteById(id);
             res.json({ message: "Portfolio deleted successfully.", result });
             
         } catch (error) {

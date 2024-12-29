@@ -1,11 +1,9 @@
 const express = require("express");
 const PortfolioController = require("../controllers/PortfolioController");
-const PortfolioUseCase = require("../../Usecases/portfolioUsecase");
 const PortfolioRepository = require("../../Repositories/portfolioRepo")
 
 const portfolioRepository = new PortfolioRepository();
-const portfolioUseCase = new PortfolioUseCase(portfolioRepository);
-const portfolioController = new PortfolioController(portfolioUseCase);
+const portfolioController = new PortfolioController(portfolioRepository);
 
 const router = express.Router();
 

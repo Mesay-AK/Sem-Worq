@@ -33,8 +33,6 @@ class PortfolioRepository {
         if (existingPortfolio) {
             throw this.ErrFound;
         }
-
-
         const portfolio = new Portfolio(portfolioData);
             return await portfolio.save();
 
