@@ -34,11 +34,7 @@ const getContactsUs = async (page, limit, sortOrder) => {
 
 const deleteContactUs = async (messageId) => {
   try {
-    const message = await ContactUsModel.findById(messageId);
-    if (!message){
-      console.log("right, haven't found the message")
-    }
-
+    
     const deletedMessage = await ContactUsModel.findByIdAndDelete(messageId);
     if (!deletedMessage) {
       console.log("the found contact: ", message)
