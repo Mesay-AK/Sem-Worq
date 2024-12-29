@@ -11,7 +11,6 @@ const connectToDatabase = require('./Infrastructures/dataBase')
 const serviceRoutes = require('./adapters/Routes/ServiceRoutes');
 const contactRoutes = require('./adapters/Routes/ContactUsRoutes');
 const AuthRoutes = require('./adapters/Routes/AuthRoutes')
-// const AuthRoutes = require('./adapters/Routes/AuthRoutes')
 const blogRoutes = require("./adapters/Routes/blogsRoutes")
 
 
@@ -28,12 +27,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
 
 
-app.use('/api/services', serviceRoutes); // Routes for 
+app.use('/api/services', serviceRoutes); 
 app.use('/api/contacts', contactRoutes); 
 app.use('/api/contacts', contactRoutes); 
 app.use('/api/blogs', blogRoutes);
 app.use('/api', AuthRoutes);
-// app.use('/api', AuthRoutes);
+
 
 
 app.use((err, req, res, next) => {
