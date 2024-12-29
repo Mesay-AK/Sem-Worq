@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const CommentSchema = new mongoos.Schema({
+const CommentSchema = new mongoose.Schema({
     email: { type: String, required: true },
     content: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
