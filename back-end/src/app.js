@@ -1,33 +1,40 @@
 const express = require('express');
-const dotenv = require('dotenv');
-const connectToDatabase = require('./Infrastructures/dataBase');
-const contactUsRouter = require('./adapters/Routes/ContactUsRoutes');
-const testmonyRoute = require('./adapters/Routes/testmonyRoutes');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const dotenv = require('dotenv')
+dotenv.config({ path: '../.env' });
 
-dotenv.config();
+const connectToDatabase = require('./Infrastructures/dataBase')
+const testimonyRoutes = require('./adapters/Routes/testmonyRoutes');
+const contactRoutes = require('./adapters/Routes/ContactUsRoutes');
+
+
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+connectToDatabase();
 
-// Middleware to parse JSON requests
-app.use(express.json());
+app.use(cors());
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({ extended: true })); 
 
-// Route setup
-app.use('/api/contacts', contactUsRouter);
-app.use('/api/testimonials', testmonyRoute);
 
-// Error handling middleware
+app.use('/api/testimony', testimonyRoutes); 
+app.use('/api/contacts', contactRoutes); 
+
+
+
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!', error: err.message });
+  console.error('Error:', err.stack || err.message);
+  res.status(err.status || 500).json({
+    error: {
+      message: err.message || 'Internal Server Error',
+    },
+  });
 });
 
-connectToDatabase() 
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error('Failed to start server:', error.message);
-  });
+  const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+module.exports = app;
+ 
