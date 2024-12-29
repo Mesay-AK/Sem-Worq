@@ -9,7 +9,7 @@
 
 /* Hexagon shape */
 .hexagon {
-  position: absolute;
+  position: fixed;
   width: 150px; /* Adjust size */
   height: 190px; /* Hexagon height (based on width for perfect shape) */
   background-color: rgba(227, 172, 31, 0.2); /* Hexagon color */
