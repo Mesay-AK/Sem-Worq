@@ -2,8 +2,6 @@
 const contactUseCases = require('../../Usecases/ContactUsUsecase');
 const mongoose = require('mongoose');
 
-
-
 const createContactController= async (req, res) => {
   try {
     const { firstName, lastName, email, subject, message } = req.body;

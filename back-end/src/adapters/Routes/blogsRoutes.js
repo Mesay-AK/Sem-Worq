@@ -3,6 +3,8 @@ const express = require('express');
 const BlogController = require('../../adapters/controllers/blogsController');
 const BlogUseCase = require('../../Usecases/blogsUsecase');
 const BlogRepository = require('../../Repositories/blogsRepo');
+const { authMiddleware, adminOnlyMiddleware } = require('../Middlewares/AuthMiddleware');
+
 
 const router = express.Router();
 

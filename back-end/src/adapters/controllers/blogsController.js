@@ -6,7 +6,6 @@ class BlogController {
 
     async createBlog(req, res) {
         try {
-
             const blog = await this.blogUseCase.createBlog(req.body);
             res.status(201).json(blog);
         } catch (error) {
@@ -58,44 +57,38 @@ class BlogController {
         }
     }
 
-    async listBlogs(req, res) {
-        try {
-            const filters = {};
+async listBlogs(req, res) {
+    try {
+        const filters = {};
 
-            // const isAdmin = req.user && req.user.role === 'admin'; 
-            
-            // if (!isAdmin && req.query.status && req.query.status === 'draft') {
-            //     return res.status(403).json({ error: 'You are not authorized to view draft blogs.' });
-            // }
 
-            if (req.query.author) {
-                filters.author = req.query.author;
-            }
-
-    
-            if (req.query.status) {
-                filters.status = req.query.status;
-            } 
-            // else if (!isAdmin) {
-
-            //     filters.status = 'published';
-            // }
-
-            if (req.query.tags) {
-                filters.tags = { $in: req.query.tags.split(',') };
-            }
-
-            const page = parseInt(req.query.page, 10) || 1;
-            const limit = parseInt(req.query.limit, 10) || 10;
-
-            const result = await this.blogUseCase.listBlogs(filters, page, limit);
-
-            res.json(result);
-        } catch (error) {
-
-            res.status(400).json({ error: error.message });
+        if (req.user.role !== 'admin') {
+            filters.status = 'published';
         }
+
+        if (req.query.status && req.user.role === 'admin') {
+            filters.status = req.query.status;
+        }
+
+        if (req.query.author) {
+            filters.author = req.query.author;
+        }
+
+        if (req.query.tags) {
+            filters.tags = { $in: req.query.tags.split(',') };
+        }
+
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+
+        const result = await this.blogUseCase.listBlogs(filters, page, limit);
+
+        res.json(result);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
+}
+
 
     async addComment(req, res) {
         try {
