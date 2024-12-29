@@ -10,6 +10,8 @@ const serviceRoutes = require('./adapters/Routes/ServiceRoutes');
 const contactRoutes = require('./adapters/Routes/ContactUsRoutes');
 const AuthRoutes = require('./adapters/Routes/AuthRoutes')
 const blogRoutes = require("./adapters/Routes/blogsRoutes")
+const portfloio = require('./adapters/Routes/portfolioRoutes');
+
 
 
 const app = express();
@@ -25,6 +27,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api', AuthRoutes);
 app.use('/api/testimony', testimonyRoutes); 
 app.use('/api/contacts', contactRoutes); 
+app.use('/api/portfolio', portfloio); 
 
 
 
