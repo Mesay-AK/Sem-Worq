@@ -12,6 +12,6 @@
   position: absolute;
   width: 150px; /* Adjust size */
   height: 190px; /* Hexagon height (based on width for perfect shape) */
-  background-color: rgba(227, 172, 31, 0.1); /* Hexagon color */
+  background-color: rgba(227, 172, 31, 0.2); /* Hexagon color */
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
