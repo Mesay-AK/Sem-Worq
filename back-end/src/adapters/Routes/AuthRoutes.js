@@ -1,6 +1,5 @@
 const express = require('express');
 const AuthController = require('../controllers/AuthController');
-const AuthUseCase = require('../../Usecases/AuthUsecase');
 const AdminRepository = require('../../Repositories/AdminRepository');
 const {authMiddleware, adminOnlyMiddleware} = require('../../adapters/Middlewares/AuthMiddleware');
 const mailService = require('../../Infrastructures/email/mailService')
@@ -12,8 +11,7 @@ const TokenHelper = require('../../Infrastructures/helpers/token-helper')
 
 const router = express.Router();
 const repository = new AdminRepository();
-const useCase = new AuthUseCase(repository, mailService, PasswordHelper, TokenHelper);
-const controller = new AuthController(useCase);
+const controller = new AuthController(repository, mailService, PasswordHelper, TokenHelper);
 
 router.post('/add', authMiddleware, adminOnlyMiddleware, (req, res) => controller.register(req, res));
 router.post('/login', (req, res) => controller.login(req, res));
