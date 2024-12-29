@@ -1,13 +1,11 @@
 const express = require('express');
 const ServiceController = require('../controllers/ServicesController');
-const ServiceUseCase = require('../../Usecases/ServicesUsecase');
 const ServiceRepository = require('../../Repositories/ServicesRepo');
 const { authMiddleware, adminOnlyMiddleware } = require('../Middlewares/AuthMiddleware');
 
 
 const serviceRepo = new ServiceRepository();
-const serviceUseCase = new ServiceUseCase(serviceRepo);
-const serviceController = new ServiceController(serviceUseCase);
+const serviceController = new ServiceController(serviceRepo);
 
 const router = express.Router();
 
