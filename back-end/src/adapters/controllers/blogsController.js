@@ -1,12 +1,16 @@
 const mongoose = require('mongoose')
+const BlogEntity = require('../../Domain/blogEntity');
 class BlogController {
-    constructor(blogUseCase) {
-        this.blogUseCase = blogUseCase;
+    constructor(blogRepository) {
+        this.blogRepository = blogRepository;
     }
 
     async createBlog(req, res) {
         try {
-            const blog = await this.blogUseCase.createBlog(req.body);
+            const {data} = req.body
+            const blogEntity = new BlogEntity(data);
+            blogEntity.validate();
+            const blog = await this.blogRepository.create(blogEntity);
             res.status(201).json(blog);
         } catch (error) {
             res.status(400).json({ error: error.message });
@@ -15,8 +19,18 @@ class BlogController {
 
     async updateBlog(req, res) {
         try {
+            const {id} = req.params.id;
+            const {data} = req.body;
+            const existingBlog = await this.blogRepository.findById(id);
+            if (!existingBlog) {
+                throw new Error("Blog not found");
+            }
 
-        const updatedBlog = await this.blogUseCase.updateBlog(req.params.id, req.body);
+            const blogEntity = new BlogEntity({ ...existingBlog.toObject(), ...data });
+            blogEntity.validateOnUpdate();
+
+            const updatedBlog = await this.blogRepository.update(id, updateData);
+
             res.json(updatedBlog);
         } catch (error) {
             res.status(400).json({ error: error.message });
@@ -33,14 +47,17 @@ class BlogController {
                 return res.status(400).json({ message: 'Invalid blog ID' });
             }
 
-            const deletedBlog = await this.blogUseCase.deleteBlog(id);
+            const existingBlog = await this.blogRepository.findById(id);
+            if (!existingBlog) {
+                throw new Error("Blog not found");
+            }
+            const deletedBlog =  await this.blogRepository.delete(id);
 
             if (!deletedBlog){
                 console.log("Document with blogId not found:", id);
-                return res.status(404).json({message: "Blog not found"})
+                throw new Error("Blog not deleted.")
             }
             
-
             res.status(200).json({ message: 'Blog deleted successfully', deletedBlog });
 
         } catch (error) {
@@ -50,7 +67,12 @@ class BlogController {
 
     async getBlog(req, res) {
         try {
-            const blog = await this.blogUseCase.getBlog(req.params.id);
+            const {id} = req.id;
+            const blog = await this.blogRepository.findById(id);
+            if (!blog) {
+                throw new Error("Blog not found");
+            }
+
             res.json(blog);
         } catch (error) {
             res.status(404).json({ error: error.message });
@@ -65,15 +87,12 @@ async listBlogs(req, res) {
         if (req.user.role !== 'admin') {
             filters.status = 'published';
         }
-
         if (req.query.status && req.user.role === 'admin') {
             filters.status = req.query.status;
         }
-
         if (req.query.author) {
             filters.author = req.query.author;
         }
-
         if (req.query.tags) {
             filters.tags = { $in: req.query.tags.split(',') };
         }
@@ -81,7 +100,18 @@ async listBlogs(req, res) {
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 10;
 
-        const result = await this.blogUseCase.listBlogs(filters, page, limit);
+        const blogs = await this.blogRepository.findAll(filters, page, limit);
+        const total = await this.blogRepository.count(filters);
+
+        const result = {
+            blogs,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
 
         res.json(result);
     } catch (error) {
@@ -92,9 +122,18 @@ async listBlogs(req, res) {
 
     async addComment(req, res) {
         try {
-            const { blogId } = req.params;
+            const { blogId } = req.params.id;
             const { email, content } = req.body;
-            const updatedBlog = await this.blogUseCase.addComment({blogId, email, content});
+
+            const commentData = new CommentEntity({blogId, email, content});
+            CommentEntity.validateForComment();
+
+            const updatedBlog = await this.blogRepository.addComment(blogId, {email, content});
+
+            if (!updatedBlog) {
+                throw new Error("Blog not found or comment could not be added.");
+            }
+
             res.status(200).json(updatedBlog);
         } catch (error) {
             res.status(400).json({ error: error.message });
@@ -104,7 +143,11 @@ async listBlogs(req, res) {
     async removeComment(req, res) {
         try {
             const { blogId, commentId } = req.params;
-            const updatedBlog = await this.blogUseCase.removeComment(blogId, commentId);
+
+            const updatedBlog = await this.blogRepository.removeComment(blogId, commentId);
+            if (!updatedBlog) {
+                throw new Error("Blog not found or comment could not be removed.");
+            }
             res.status(200).json(updatedBlog);
         } catch (error) {
             res.status(400).json({ error: error.message });
@@ -116,7 +159,7 @@ async listBlogs(req, res) {
             const ipAddress = req.headers['x-forwarded-for'] || req.ip;  // 
             const { blogId } = req.body;
 
-            const updatedBlog = await this.blogUseCase.addFeedback(blogId, ipAddress, liked);
+            const updatedBlog = await this.blogRepository.addFeedback(blogId, ipAddress, liked);
 
             res.status(200).json({ message: "Like added successfully", data: updatedBlog });
         } catch (error) {
@@ -129,7 +172,7 @@ async listBlogs(req, res) {
             const ipAddress = req.headers['x-forwarded-for'] || req.ip;  
             const { blogId } = req.body;
 
-            const updatedBlog = await this.blogUseCase.addFeedback(blogId, ipAddress, disliked);
+            const updatedBlog = await this.blogRepository.addFeedback(blogId, ipAddress, disliked);
 
             res.status(200).json({ message: "Dislike added successfully", data: updatedBlog });
         } catch (error) {
@@ -140,8 +183,22 @@ async listBlogs(req, res) {
     async getComments(req, res) {
         try {
             const { blogId } = req.params;
-            const comments = await this.blogUseCase.getComments(blogId);
-            res.status(200).json(comments);
+
+            const page = parseInt(req.query.page, 10) || 1;
+            const limit = parseInt(req.query.limit, 10) || 10;
+
+            const {comments, total} = await this.blogRepository.getComment(blogId, page, limit);
+            const result = {
+                comments: comments,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
+                },
+            };
+
+            res.status(200).json(result);
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
@@ -150,7 +207,7 @@ async listBlogs(req, res) {
     async getLikes(req, res) {
         try {
             const { blogId } = req.params;
-            const likes = await this.blogUseCase.getLikes(blogId);
+            const likes = await this.blogRepository.getLikes(blogId);
             res.status(200).json({ count: likes.length, likes });
         } catch (error) {
             res.status(400).json({ error: error.message });
@@ -160,7 +217,7 @@ async listBlogs(req, res) {
     async getDislikes(req, res) {
         try {
             const { blogId } = req.params;
-            const dislikes = await this.blogUseCase.getDislikes(blogId);
+            const dislikes = await this.blogRepository.getDislikes(blogId);
             res.status(200).json({ count: dislikes.length, dislikes });
         } catch (error) {
             res.status(400).json({ error: error.message });

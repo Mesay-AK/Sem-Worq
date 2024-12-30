@@ -1,11 +1,16 @@
+const TestimonialEntity = require('../../Domain/testimoneyEntity');
 class TestimonialController {
-    constructor(usecase){
-        this.testimonialUseCase = usecase;
+    constructor(repository){
+        this.testimoinialRepository = repository;
     }
     async createTestimonial(req, res) {
         try {
             const testimonialData = req.body;
-            const testimonial = await this.testimonialUseCase.createTestimonial(testimonialData);
+
+            const testimonialEntity = new TestimonialEntity(testimonialData);
+            testimonialEntity.validate();
+            
+            const testimonial = await this.testimoinialRepository.create(testimonialData);
             res.status(201).json({
                 message: 'Testimonial created successfully.',
                 testimonial,
@@ -29,7 +34,18 @@ class TestimonialController {
             const page = parseInt(req.query.page, 10) || 1;
             const limit = parseInt(req.query.limit, 10) || 10;
 
-            const result = await this.testimonialUseCase.listTestimonials(filters, page, limit);
+            const testimonies = await this.testimoinialRepository.findAll(filters, page, limit);
+            const total = await this.testimoinialRepository.count(filters);
+
+            const result = {
+                testimonials: testimonies,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
+                },
+            };
             res.json(result);
         } catch (error) {
             console.error("Error in TestimonialController.listTestimonials:", error);
@@ -41,7 +57,11 @@ class TestimonialController {
         try {
             const { id } = req.params;
             const testimonialData = req.body;
-            const updatedTestimonial = await this.testimonialUseCase.updateTestimonial(id, testimonialData);
+
+            const testimonialEntity = new TestimonialEntity(testimonialData);
+            testimonialEntity.validateOnUpdate();
+            const updatedTestimonial = await this.testimoinialRepository.update(id, testimonialData);
+
             res.json({ message: 'Testimonial updated successfully.', testimonial: updatedTestimonial });
         } catch (error) {
             console.error("Error in TestimonialController.updateTestimonial:", error);
@@ -52,8 +72,8 @@ class TestimonialController {
     async deleteTestimonial(req, res) {
         try {
             const { id } = req.params;
-            await this.testimonialUseCase.deleteTestimonial(id);
-            res.json({ message: 'Testimonial deleted successfully.' });
+            const deletedTestimony = await this.testimoinialRepository.delete(id);
+            res.status(200).json({ message: 'Testimonial deleted successfully.', deleted: deletedTestimony });
         } catch (error) {
             console.error("Error in TestimonialController.deleteTestimonial:", error);
             res.status(400).json({ error: error.message });

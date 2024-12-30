@@ -1,9 +1,7 @@
-const AdminRepository = require('./../Repositories/AdminRepository')
 const mongoose = require('mongoose');
 const dotenv = require('dotenv')
 dotenv.config({ path: '../.env' });
 
-const AdminRepo = new AdminRepository()
 const connectToDatabase = async () => {
   try {
 

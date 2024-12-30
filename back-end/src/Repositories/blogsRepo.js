@@ -58,16 +58,37 @@ class BlogRepository {
             { $pull: { comments: { _id: commentId } } }, 
             { new: true });
     }
-    async getComments(blogId) {
-        const blog = await Blog.findById(blogId).select('comments');
+    async getComments(blogID, page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+        const comments = await Blog.findById(blogId).select('comments').skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
         if (!blog) {
-            throw new Error("Blog not found.");
+            throw new Error("Comments not found.");
         }
-        return blog.comments;
+        const total = await Blog.findById(blogID).select('comments').countDocuments();
+
+        return {comments, total};
     }
 
+    async addFeedback(blogID, ipAddress, feedback){
+        const blog = this.blogRepository.findById(blogID);
 
-    async addFeedback(blogId, feedback){
+        if (blog.feedback.includes(ipAddress)){
+            throw new (`You have already ${feedback}`)
+        }
+
+        blog.feedback.push(ipAddress);
+        if (feedback == "liked"){
+            blog.likeCount += 1;
+
+            return await this.blogRepository.updateFeedback(blogID,{liked, likeCount})
+        }else{
+            blog.dislikeCount += 1;
+            return await this.blogRepository.updateFeedback(blogID,{disliked, dislikeCount})
+        }
+    }
+    async updateFeedback(blogId, feedback){
         
         const updatedFeedback = await BlogModel.findByIdAndUpdate(blogId, feedback, {new: true})
 

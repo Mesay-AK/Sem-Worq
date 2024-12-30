@@ -1,13 +1,11 @@
 const express = require('express');
 
 const TestimonialController = require('../controllers/testimoneycontroller');
-const TestimonialUsecase = require('../../Usecases/testimoneyUsecase');
 const TestimonialRepository = require('../../adapters/Repositories/testimoneyRepo');
 
 
 const repo = new TestimonialRepository();
-const usecase = new TestimonialUsecase(repo);
-const controller = new TestimonialController(usecase);
+const controller = new TestimonialController(repo);
 
 const router = express.Router();
 

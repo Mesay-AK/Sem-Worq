@@ -3,35 +3,6 @@ const PasswordHelper = require('../Infrastructures/helpers/password-helper')
 const AdminEntity = require('../Domain/AdminEntity')
 
 class AdminRepository {
-    async createFirstAdmin() {
-
-    const admins = await this.countAdmins()
-    console.log(admins)
-    if (!admins) {
-        const adminEntity = new AdminEntity({
-            name: process.env.ADMIN_NAME,
-            email: process.env.ADMIN_EMAIL,
-            password: process.env.ADMIN_PASSWORD,
-            role: process.env.ADMIN_ROLE,
-            refreshTokens :[] ,
-            resetToken : ''
-
-        });
-
-
-
-        adminEntity.password = await PasswordHelper.hashPassword(adminEntity.password);
-
-        const firstAdmin = this.add(adminEntity);
-        if (!firstAdmin){
-            console.log("Error while creating the first Admin")
-        }
-        
-        console.log('First admin user created!');
-    } else {
-        console.log('Admin user already exists');
-    }
-}
     async add(adminData) {
         try {
             
