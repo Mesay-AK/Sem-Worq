@@ -1,10 +1,8 @@
-const Testimonial = require('../models/testimoneyModel');
+const Testimonial = require('../Infrastructures/models/testimoneyModel');
 
 class TestimonialRepository {
     async create(testimonialData) {
         try {
-
-            const testimonial = new Testimonial(testimonialData);
 
             const existTestimony = await Testimonial.findOne(testimonialData);
 

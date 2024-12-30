@@ -1,9 +1,10 @@
 class TestimonialEntity {
-    constructor({ name, email, content, rating }) {
+    constructor({ name, email, content, company, image }) {
         this.name = name;
         this.email = email;
         this.content = content;
-        this.rating = rating;
+        this.company = company;
+        this.image = image;
     }
 
     validate() {
@@ -19,8 +20,8 @@ class TestimonialEntity {
             throw new Error("Testimonial content must be at least 10 characters long.");
         }
 
-        if (this.rating < 1 || this.rating > 5) {
-            throw new Error("Rating must be between 1 and 5.");
+        if (!this.company || this.company.trim().length < 3) {
+            throw new Error("Company Name must be at least 3 characters long.");
         }
     }
 
@@ -37,8 +38,8 @@ class TestimonialEntity {
             throw new Error("Testimonial content must be at least 10 characters long.");
         }
 
-        if (this.rating && (this.rating < 1 || this.rating > 5)) {
-            throw new Error("Rating must be between 1 and 5.");
+        if (!this.company || this.company.trim().length < 3) {
+            throw new Error("Company Name must be at least 3 characters long.");
         }
     }
 }

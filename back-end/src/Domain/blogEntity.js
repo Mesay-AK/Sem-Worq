@@ -1,8 +1,9 @@
 class BlogEntity{
-    constructor({title, content, author, tags,status,comments, liked, disliked}){
+    constructor({title, content, author,image, tags,status,comments, liked, disliked}){
         this.title = title;
         this.content = content;
         this.author = author;
+        this.image = image;
         this.tags = tags;
         this.status = status;
         this.liked = liked;

@@ -10,7 +10,7 @@ class TestimonialController {
             const testimonialEntity = new TestimonialEntity(testimonialData);
             testimonialEntity.validate();
             
-            const testimonial = await this.testimoinialRepository.create(testimonialData);
+            const testimonial = await this.testimoinialRepository.create(testimonialEntity);
             res.status(201).json({
                 message: 'Testimonial created successfully.',
                 testimonial,

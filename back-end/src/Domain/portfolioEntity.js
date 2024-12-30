@@ -1,9 +1,9 @@
 class PortfolioEntity {
-    constructor({ title, description, date, tags, media, visibility }) {
+    constructor({ title, description, date, tags, image, visibility }) {
         this.title = title;
         this.description = description;
         this.tags = tags;
-        this.media = media;
+        this.image = image;
         this.visibility = visibility;
     }
 

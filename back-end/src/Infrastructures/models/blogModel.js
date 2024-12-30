@@ -3,12 +3,14 @@ const mongoose = require('mongoose');
 const CommentSchema = new mongoose.Schema({
     email: { type: String, required: true },
     content: { type: String, required: true },
+    
     createdAt: { type: Date, default: Date.now },
 })
 const BlogSchema = new mongoose.Schema({
     title: { type: String, required: true },
     content: { type: String, required: true },
     author: { type: String, required: true },
+    image: { type: Buffer, required: true},
     tags: { type: [String], default: [] },
     comments: {CommentSchema}, 
     liked: [String], 

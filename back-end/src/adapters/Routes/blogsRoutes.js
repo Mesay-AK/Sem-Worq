@@ -1,7 +1,6 @@
 // routes/blogRoutes.js
 const express = require('express');
 const BlogController = require('../../adapters/controllers/blogsController');
-const BlogUseCase = require('../../Usecases/blogsUsecase');
 const BlogRepository = require('../../Repositories/blogsRepo');
 const { authMiddleware, adminOnlyMiddleware } = require('../Middlewares/AuthMiddleware');
 
@@ -9,8 +8,7 @@ const { authMiddleware, adminOnlyMiddleware } = require('../Middlewares/AuthMidd
 const router = express.Router();
 
 const blogRepository = new BlogRepository();
-const blogUseCase = new BlogUseCase(blogRepository);
-const blogController = new BlogController(blogUseCase);
+const blogController = new BlogController(blogRepository);
 
 router.post('/create', authMiddleware, adminOnlyMiddleware, (req, res) => blogController.createBlog(req, res));
 router.put('/edit/:blogId',authMiddleware, adminOnlyMiddleware, (req, res) => blogController.updateBlog(req, res));

@@ -1,6 +1,6 @@
 const Admin = require('../Infrastructures/models/AdminModel');
-const PasswordHelper = require('../Infrastructures/helpers/password-helper')
-const AdminEntity = require('../Domain/AdminEntity')
+// const PasswordHelper = require('../Infrastructures/helpers/password-helper')
+// const AdminEntity = require('../Domain/AdminEntity')
 
 class AdminRepository {
     async add(adminData) {
