@@ -2,17 +2,23 @@ const ServiceModel = require("../Infrastructures/models/ServicesModel");
 
 class ServiceRepository {
 
-  async createService(service) {
+  async CreateService(service) {
     try {
+      const checkExistance = await ServiceModel.findOne(service);
+
+      if (checkExistance){
+        throw new Error("Service already Exists.")
+      }
       const newService = new ServiceModel(service);
       return await newService.save();
     } catch (error) {
+
       console.error("Error in repository (createService):", error.message);
       throw new Error(`Error while creating service: ${error.message}`);
     }
   }
 
-  async updateService(id, updatedFields) {
+  async UpdateService(id, updatedFields) {
     try {
       const updatedService = await ServiceModel.findByIdAndUpdate(id, updatedFields, { new: true });
 
@@ -27,7 +33,7 @@ class ServiceRepository {
     }
   }
 
-  async deleteService(id) {
+  async DeleteService(id) {
     try {
       const deletedService = await ServiceModel.findByIdAndDelete(id);
 
@@ -42,7 +48,7 @@ class ServiceRepository {
     }
   }
 
-  async getAllServices() {
+  async GetAllServices() {
     try {
       return await ServiceModel.find();
     } catch (error) {
