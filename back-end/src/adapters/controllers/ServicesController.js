@@ -57,8 +57,22 @@ class ServiceController {
 
   async listServices(req, res) {
     try {
-      const services = await this.serviceRepo.GetAllServices();
-      res.status(200).json(services);
+            const page = parseInt(req.query.page, 10) || 1;
+            const limit = parseInt(req.query.limit, 10) || 10;
+
+            const portfolios = await this.serviceRepo.GetAllServices(page, limit);
+            const total = await this.ServiceRepo.count();
+
+            const result = {
+                portfolios,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
+                },
+            };
+            res.json(result);
     } catch (err) {
       console.error("Controller error (listServices):", err.message);
       res.status(500).json({ message: err.message });

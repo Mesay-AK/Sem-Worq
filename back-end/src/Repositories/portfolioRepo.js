@@ -3,7 +3,7 @@ const Portfolio = require("../Infrastructures/models/portfolioModel");
 class PortfolioRepository {
     ErrFound = new Error ("Portifolio already exists")
 
-    async findAll(filters = {}, page = 1, limit = 10) {
+    async findAll(page = 1, limit = 10) {
         try {
             const skip = (page - 1) * limit;
             return await Portfolio.find(filters)
@@ -16,9 +16,9 @@ class PortfolioRepository {
         }
     }
 
-    async count(filters = {}) {
+    async count() {
         try {
-            return await Portfolio.countDocuments(filters);
+            return await Portfolio.countDocuments();
         } catch (error) {
             console.error("Error in PortfolioRepository.count:", error);
             throw new Error("Failed to count portfolios. Please try again later.");

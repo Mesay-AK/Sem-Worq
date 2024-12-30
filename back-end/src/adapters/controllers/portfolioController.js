@@ -6,19 +6,11 @@ class PortfolioController {
 
     async listPortfolios(req, res) {
         try {
-            const filters = {};
-            if (req.query.visibility) {
-                filters.visibility = req.query.visibility;
-            }
-            if (req.query.tags) {
-                filters.tags = { $in: req.query.tags.split(",") };
-            }
-
             const page = parseInt(req.query.page, 10) || 1;
             const limit = parseInt(req.query.limit, 10) || 10;
 
-            const portfolios = await this.repository.findAll(filters, page, limit);
-            const total = await this.repository.count(filters);
+            const portfolios = await this.repository.findAll(page, limit);
+            const total = await this.repository.count();
 
             const result = {
                 portfolios,
