@@ -3,17 +3,17 @@ import image from "../assets/Logo.PNG";
 
 const Navbar = () => {
   return (
-    <header className="w-full h-40 bg-[#000000] flex items-center justify-between px-8">
-      {/* Logo - Positioned on the left */}
+    <header className="w-full h-40 bg-[#f8f8f2] flex items-center justify-between px-8">
+      
       <div className="flex items-center">
         <img
-          src={image} // Update this path based on your logo location
+          src={image}
           alt="Logo"
-          className="w-24" // Adjust the width of the logo as needed
+          className="w-24" 
         />
       </div>
 
-      {/* Navigation Links - Positioned on the right */}
+      
       <nav>
         <ul className="flex space-x-8">
           {["Home", "Service", "Blog", "Portfolio", "Contact"].map((item) => (
