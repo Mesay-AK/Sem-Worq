@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Dots from "./pagination-dots"; // Import the Dots component
+import Dots from "./pagination-dots"; 
 import img1 from "../assets/img1.jpg";
 import img2 from "../assets/img2.jpg";
 import img3 from "../assets/img3.jpg";
@@ -25,7 +25,7 @@ const Portfolio = () => {
   return (
     <div className="portfolio">
       
-      <div className="text-center mt-8 text-3xl font-bold" style={{ color: "#DD9735" }}>
+      <div className="text-center mt-1 text-3xl font-bold" style={{ color: "#DD9735" }}>
         Portfolio 
       </div>
 
@@ -50,29 +50,31 @@ const Portfolio = () => {
         ))}
 
         
-        <button
-          className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black text-white p-2 rounded-full z-10"
-          onClick={handlePrev}
-        >
-          &#8592; 
-        </button>
+<button
+  className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-gradient-to-r from-[#9d832edf] to-[#efa133] text-black p-1 rounded-full z-10 text-3xl shadow-lg hover:scale-110 transition-transform duration-300"
+  onClick={handlePrev}
+>
+  &#8592; 
+</button>
 
-        <button
-          className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-black text-white p-2 rounded-full z-10"
-          onClick={handleNext}
-        >
-          &#8594; 
-        </button>
+<button
+  className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-gradient-to-r from-[#9d832edf] to-[#efa133] text-black p-1 rounded-full z-10 text-3xl shadow-lg hover:scale-110 transition-transform duration-300"
+  onClick={handleNext}
+>
+  &#8594; 
+</button>
+
 
        
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          <Dots
+          
+        </div>
+      </div>
+      <Dots
             total={images.length}
             activeIndex={currentIndex}
             onDotClick={(index) => setCurrentIndex(index)} // Pass setCurrentIndex to update the active index when a dot is clicked
           />
-        </div>
-      </div>
     </div>
   );
 };
