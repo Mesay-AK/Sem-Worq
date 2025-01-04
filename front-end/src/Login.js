@@ -71,7 +71,7 @@ function LoginPage() {
             </div>
             <div className="mt-4 text-center">
               <a
-                className="text-l text-yellow-200 hover:text-yellow-300"
+                className="text-l text-yellow-400 hover:text-yellow-300"
                 href="#"
               >
                 Create Account
