@@ -69,14 +69,14 @@ function LoginPage() {
                 Login
               </button>
             </div>
-            <div className="mt-4 text-center">
-              <a
-                className="text-l text-yellow-400 hover:text-yellow-300"
-                href="#"
-              >
-                Create Account
-              </a>
-            </div>
+            // <div className="mt-4 text-center">
+            //   <a
+            //     className="text-l text-yellow-400 hover:text-yellow-300"
+            //     href="#"
+            //   >
+            //     Create Account
+            //   </a>
+            // </div>
           </form>
         </div>
       </div>
