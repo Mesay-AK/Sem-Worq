@@ -30,7 +30,7 @@ function LoginPage() {
               </label>
               <div className="relative">
                 <input
-                  className="appearance-none border-none rounded-lg w-full py-3 px-4 text-black leading-tight focus:outline-none bg-yellow-500 peer"
+                  className="appearance-none border-none rounded-lg w-full py-3 px-4 text-black leading-tight focus:outline-none bg-yellow-600 peer"
                   id="username"
                   type="text"
                 />
@@ -46,7 +46,7 @@ function LoginPage() {
               </label>
               <div className="relative">
                 <input
-                  className="appearance-none border-none rounded-lg w-full py-3 px-4 text-black leading-tight focus:outline-none bg-yellow-500"
+                  className="appearance-none border-none rounded-lg w-full py-3 px-4 text-black leading-tight focus:outline-none bg-yellow-600"
                   id="password"
                   type="password"
                 />
@@ -63,7 +63,7 @@ function LoginPage() {
             </div>
             <div className="flex items-center justify-center">
               <button
-                className="bg-white hover:text-yellow-700 text-lg text-yellow-400 font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline w-full"
+                className="bg-white hover:text-yellow-700 text-lg text-yellow-500 font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline w-full"
                 type="button"
               >
                 Login
