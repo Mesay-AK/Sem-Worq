@@ -1,4 +1,4 @@
-// src/App.jsx
+
 import React from "react";
 import Footer from "./Component/Footer/Footer";
 import "@fortawesome/fontawesome-free/css/all.min.css";
