@@ -1,15 +1,16 @@
 import React from "react";
-import "./layout.css"; // Ensure your CSS is correctly linked
-import image from "../assets/image.jpg";
-import Navbar from "./Navbar";
+import "./components/layout.css"; 
+import image from "./assets/image.jpg";
+import Navbar from "./components/Navbar";
+import Hexagons from "./components/hexagons"
 
 
-const Layout = () => {
+const Home = () => {
   const hexagons = [
-    { id: 1, top: "-23%", left: "40%", rotation: "90deg" },
-    { id: 2, top: "40%", left: "55%", rotation: "90deg" },
-    { id: 3, top: "70%", left: "90%", rotation: "90deg" },
-    { id: 4, top: "80%", left: "50%", rotation: "90deg" },
+    { id: 1, top: "-15%", left: "48%", rotation: "90deg"},
+    { id: 2, top: "30%", left: "58%", rotation: "90deg" },
+    { id: 3, top: "60%", left: "83%", rotation: "90deg" },
+    { id: 4, top: "75%", left: "50%", rotation: "90deg" },
   ];
 
   return (
@@ -17,18 +18,21 @@ const Layout = () => {
       <div>
         <Navbar />
       </div>
+      <div>
+         <Hexagons />
+         </div>
       {hexagons.map((hex) => (
         <div
           key={hex.id}
           className="hexagon"
           style={{
             position: "fixed",
-            top: hex.top || "auto", // Use 'top' only if provided
-            bottom: hex.bottom || "auto", // Use 'bottom' only if provided
+            top: hex.top || "auto", 
+            bottom: hex.bottom || "auto", 
             left: hex.left,
             transform: `rotate(${hex.rotation})`,
             zIndex: 1,
-            opacity: 0.2, // Adjust opacity directly
+            opacity: 0.2, 
           }}
         >
           <img
@@ -37,10 +41,11 @@ const Layout = () => {
             className="w-full h-full object-cover"
           />
         </div>
+        
 
       ))}
     </div>
   );
 };
 
-export default Layout;
+export default Home;

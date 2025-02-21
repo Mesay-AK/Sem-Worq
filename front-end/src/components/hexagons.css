@@ -1,0 +1,21 @@
+.hexagon {
+  position: fixed;
+  width: 100px;
+  height: 130px;
+  background-color: rgba(227, 172, 31, 0.4);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+@keyframes fly-in {
+  from {
+    transform: translateY(-100vh) rotate(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(90deg);
+    opacity: 1;
+  }
+}
+
+.hexagon.animate-fly-in {
+  animation: fly-in 1s ease-out forwards;
+}
