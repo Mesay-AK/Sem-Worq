@@ -79,10 +79,9 @@ class BlogController {
         }
     }
 
-async listBlogs(req, res) {
+async listBlogsAdmin(req, res){
     try {
         const filters = {};
-
 
         if (req.user.role !== 'admin') {
             filters.status = 'published';
@@ -90,6 +89,41 @@ async listBlogs(req, res) {
         if (req.query.status && req.user.role === 'admin') {
             filters.status = req.query.status;
         }
+        if (req.query.author) {
+            filters.author = req.query.author;
+        }
+        if (req.query.tags) {
+            filters.tags = { $in: req.query.tags.split(',') };
+        }
+
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+
+        const blogs = await this.blogRepository.findAll(filters, page, limit);
+        const total = await this.blogRepository.count(filters);
+
+        const result = {
+            blogs,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+
+        res.json(result);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+async listBlogs(req, res) {
+    try {
+        const filters = {};
+
+        filters.status = 'published';
+        
         if (req.query.author) {
             filters.author = req.query.author;
         }

@@ -1,4 +1,6 @@
 const AdminEntity = require('../../Domain/AdminEntity');
+const crypto = require('crypto');
+
 class AuthController {
     constructor(adminRepository, MailService, PasswordHelper, TokenHelper) {
         this.adminRepository = adminRepository;
@@ -7,7 +9,7 @@ class AuthController {
         this.TokenHelper = TokenHelper;
     }
 
-    async add(req, res) {
+    async register(req, res) {
         try {
             const { name, email, password, role } = req.body;
 
@@ -20,12 +22,14 @@ class AuthController {
                 throw new Error("Admin with this email already exists.");
             }
 
-            adminEntity.password = await this.PasswordHelper.hashPassword(adminEntity.password);
-            const admin = await this.adminRepository.add({ name, email, password, role }); 
+            const hashedPassword = await this.PasswordHelper.hashPassword(adminEntity.password);
+
+            adminEntity.password = hashedPassword;
+
+            const admin = await this.adminRepository.add(adminEntity); 
 
             res.status(201).json({message:"admin added successfully", data: admin});
         } catch (error) {
-            
             res.status(400).json({ error: error.message });
         }
     }
@@ -35,116 +39,121 @@ class AuthController {
             const { email, password } = req.body;
 
             const admin = await this.adminRepository.findByEmail(email);
-            const validated = (await this.PasswordHelper.comparePassword(password, admin.password))
-            if (!admin || !validated) {
+            if (!admin) {
+                throw new Error("Invalid email or password.");
+            }
+
+            const validated = await this.PasswordHelper.comparePassword(password, admin.password);
+
+            if (!validated) {
                 throw new Error("Invalid email or password.");
             }
 
             const accessToken = this.TokenHelper.generateAccessToken({ id: admin._id, role: admin.role });
-            const refreshToken = this.TokenHelper.generateRefreshToken({ id: admin._id });
+            const refreshToken = await this.TokenHelper.generateRefreshToken({ id: admin._id, email: admin.email });
 
-            const updatedAdmin = await this.adminRepository.updateRefreshToken(admin._id, refreshToken);
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+                sameSite: 'Strict',
+                path: '/',
+            });
 
-            if (!updatedAdmin){
-                throw new Error("Error while updating refreshToken")
-            }
-
-            const tokens = await { accessToken, refreshToken };
-            res.json(tokens);
-
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
-    }
-
-    async logout(req, res) {
-        try {
-            const {id} = req.param;
-            await this.adminRepository.updateRefreshToken(id, null);
-            res.json({ message: "Logged out successfully." });
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
-    }
-
-    async forgotPassword(req, res) {
-        try {
-            const { email } = req.body;
-
-            const admin = await this.adminRepository.findByEmail(email);
-            if (!admin) {
-                throw new Error("Admin with this email does not exist.");
-            }
-
-            const resetToken = this.TokenHelper.generateResetToken();
-            const expiryTime = Date.now() + 3600 * 1000; 
-            await this.adminRepository.updateResetToken(admin._id, resetToken, expiryTime);
-
-            await this.MailService.sendPasswordResetEmail(email, resetToken);
-
-            res.status(200).json({ message: "Reset email sent successfully." });
+            res.status(200).json({ token: accessToken, user: admin });
 
         } catch (error) {
-
-            console.error("Error in AuthController.forgotPassword:", error);
-            res.status(400).json({ error: error.message });
-        }
-    }
-
-    async resetPassword(req, res) {
-        try {
-            const { resetToken, newPassword } = req.body;
-
-            
-            const admin = await this.adminRepository.findByResetToken(resetToken);
-
-            if (!admin || admin.resetTokenExpiry < Date.now()) {
-                throw new Error("Invalid or expired reset token.");
-            }
-
-            const hashedPassword = await this.PasswordHelper.hashPassword(newPassword);
-
-            const adminEntity = new AdminEntity({ password: newPassword, resetToken });
-
-            adminEntity.validateResetPasswordFields();
-
-            const updatedAdmin = await this.adminRepository.updatePassword(admin._id, hashedPassword);
-
-            if (!updatedAdmin){
-                throw new Error("Error while updating oassword")
-            }
-
-            res.status(200).json({ message: "Password updated successfully." });
-            
-        } catch (error) {
-            console.error("Error in AuthController.resetPassword:", error);
             res.status(400).json({ error: error.message });
         }
     }
 
     async refreshToken(req, res) {
         try {
-            const {refreshToken} = req.body.refreshToken;
-            const payload = this.TokenHelper.verifyToken(refreshToken);
-            const admin = await this.adminRepository.findById(payload.id);
-
-            if (!admin || admin.refreshToken !== refreshToken) {
-                throw new Error("Invalid refresh token.");
+            const refreshToken = req.cookies.refreshToken;
+            if (!refreshToken) {
+                throw new Error("Refresh token is required.");
             }
 
-            const newAccessToken = await this.TokenHelper.generateAccessToken({ id: admin._id, role: admin.role });
-            res.json({ accessToken: newAccessToken });
+            const payload = await this.TokenHelper.validateRefreshToken(refreshToken);
 
+            const newAccessToken =await this.TokenHelper.generateAccessToken({ id: payload.id, role: payload.role });
+
+            res.json({ token: newAccessToken });
+
+        } catch (error) {
+            res.status(401).json({ error: error.message });
+        }
+    }
+
+    async logout(req, res) {
+        try {
+            const { id } = req.params;
+            const refreshToken = req.cookies.refreshToken;
+            if (!refreshToken) {
+                throw new Error("Refresh token is required.");
+            }
+
+            await this.TokenHelper.validateRefreshToken(refreshToken);
+            await this.TokenHelper.deleteRefreshToken(id);
+            res.json({ message: "Logged out successfully." });
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
     }
 
-    async delete(req, res){
-        const {id} = req.id;
+    async resetPassword(req, res) {
+    try {
+        const { resetToken, newPassword } = req.body;
+        if (!resetToken || !newPassword) {
+        return res.status(400).json({ error: "Reset token and new password are required." });
+        }
 
-        const deleted = await this.adminRepository.delete(id)
-        res.status(200).json(deleted)
+        const admin = await this.adminRepository.findByResetToken(resetToken);
+        if (!admin) {
+        return res.status(400).json({ error: "Invalid or expired reset token." });
+        }    
+        
+        if (admin.resetTokenExpiry < Date.now()) {
+        return res.status(400).json({ error: "Reset token has expired." });
+        }
+
+        const hashedPassword = await this.PasswordHelper.hashPassword(newPassword);
+
+        await this.adminRepository.updatePassword(admin._id, hashedPassword);
+
+        res.status(200).json({ message: "Password updated successfully." });
+    } catch (error) {
+        console.error("Error in resetPassword:", error);
+        res.status(400).json({ error: error.message });
     }
+    }
+
+    async forgotPassword(req, res) {
+    try {
+        const { email } = req.body;
+        if (!email) {
+        return res.status(400).json({ error: "Email is required." });
+        }
+
+        const admin = await this.adminRepository.findByEmail(email);
+        if (!admin) {
+        return res.status(404).json({ error: "Admin with this email does not exist." });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expiryTime = Date.now() + 5 * 60 * 1000; 
+
+        await this.adminRepository.updateResetToken(admin._id, resetToken, expiryTime);
+
+
+        await this.MailService.sendPasswordResetEmail(email, resetToken);
+
+        res.status(200).json({ message: "Password reset email sent successfully." });
+    } catch (error) {
+        console.error("Error in forgotPassword:", error);
+        res.status(400).json({ error: error.message });
+    }
+    }
+
 }
+
 module.exports = AuthController;

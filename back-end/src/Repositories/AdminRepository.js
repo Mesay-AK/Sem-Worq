@@ -1,6 +1,4 @@
 const Admin = require('../Infrastructures/models/AdminModel');
-// const PasswordHelper = require('../Infrastructures/helpers/password-helper')
-// const AdminEntity = require('../Domain/AdminEntity')
 
 class AdminRepository {
     async add(adminData) {
@@ -14,18 +12,16 @@ class AdminRepository {
         }
     }
 
-    async countAdmins(){
-        const number =  await Admin.countDocuments({role: 'admin'})
-        return number
-    }
 
     async findByEmail(email) {
         try {
             const admin = await Admin.findOne({ email });
             if (!admin) {
-                throw new Error("Admin with the given email not found.");
+                return 
             }
+
             return admin;
+
         } catch (error) {
             console.error("Error in AdminRepository.findByEmail:", error.message);
             throw new Error("Failed to fetch admin by email.");
@@ -38,30 +34,20 @@ class AdminRepository {
             if (!admin) {
                 throw new Error("Admin with the given ID not found.");
             }
-            return admin;
+            const response = {};
+            response._id = admin.id;
+            response.name = admin.name;
+            response.role = admin.role;
+            response.email = admin.email;
+
+            return response;
         } catch (error) {
             console.error("Error in AdminRepository.findById:", error.message);
             throw new Error("Failed to fetch admin by ID.");
         }
     }
 
-    async updateRefreshToken(id, refreshToken) {
-        try {
-            const updatedAdmin = await Admin.findByIdAndUpdate(
-                id,
-                { refreshToken },
-                { new: true }
-            );
-            if (!updatedAdmin) {
-                throw new Error("Admin with the given ID not found for updating refresh token.");
-            }
-            return updatedAdmin;
-            
-        } catch (error) {
-            console.error("Error in AdminRepository.updateRefreshToken:", error.message);
-            throw new Error("Failed to update admin's refresh token.");
-        }
-    }
+
     
     async findByResetToken(token) {
         try {
@@ -99,14 +85,22 @@ class AdminRepository {
     }
 
     async delete(id){
-        return await Admin.findOneAndDelete(id)
-    }
+            const admin = await Admin.findOneAndDelete(id)
+            const response = {};
+            response._id = admin.id;
+            response.name = admin.name;
+            response.role = admin.role;
+            response.email = admin.email;
 
-
-    async get(req, res){
-        const admins = await Admin.find()
-        res.json(admins)
+            return response;
+        
     }
+    async getAll(){
+        return await Admin.find({}, { id_: 1, name: 1, email:1, role:1});
+        
+        }
 }
+
+
 
 module.exports = AdminRepository;

@@ -1,10 +1,10 @@
 class AdminEntity {
-    constructor({ name, email, password, role = 'admin', refreshTokens = [] ,resetToken = ''}) {
+    constructor({ name, email, password, role = 'admin',resetToken = ''}) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
-        this.refreshTokens = refreshTokens; 
+        // this.refreshTokens = refreshTokens; 
         this.resetToken = resetToken;
     }
 
