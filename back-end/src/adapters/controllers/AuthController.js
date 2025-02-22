@@ -49,7 +49,7 @@ class AuthController {
                 throw new Error("Invalid email or password.");
             }
 
-            const accessToken = this.TokenHelper.generateAccessToken({ id: admin._id, role: admin.role });
+            const accessToken = this.TokenHelper.generateAccessToken({ id: admin._id, role: admin.role, email:admin.email });
             const refreshToken = await this.TokenHelper.generateRefreshToken({ id: admin._id, email: admin.email });
 
             res.cookie('refreshToken', refreshToken, {
@@ -75,7 +75,7 @@ class AuthController {
 
             const payload = await this.TokenHelper.validateRefreshToken(refreshToken);
 
-            const newAccessToken =await this.TokenHelper.generateAccessToken({ id: payload.id, role: payload.role });
+            const newAccessToken =await this.TokenHelper.generateAccessToken({ id: payload.id, role: payload.role, email:admin.email });
 
             res.json({ token: newAccessToken });
 
