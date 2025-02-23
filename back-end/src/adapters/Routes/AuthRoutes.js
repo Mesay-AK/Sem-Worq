@@ -12,7 +12,7 @@ const TokenHelper = require('../../Infrastructures/helpers/token-helper')
 const router = express.Router();
 const repository = new AdminRepository();
 const controller = new AuthController(repository, mailService, PasswordHelper, TokenHelper);
-const Middlware = new authMiddleware(repository);
+const Middlware = new authMiddleware();
 
 router.post('/@Only_admin/_create', (req, res) => controller.register(req, res));
 router.post('/login', (req, res) => controller.login(req, res));

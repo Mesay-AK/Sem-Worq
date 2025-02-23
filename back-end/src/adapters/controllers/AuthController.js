@@ -59,6 +59,8 @@ class AuthController {
                 path: '/',
             });
 
+            console.log('generated token',accessToken)
+
             res.status(200).json({ token: accessToken, user: admin });
 
         } catch (error) {
@@ -95,6 +97,7 @@ class AuthController {
             await this.TokenHelper.validateRefreshToken(refreshToken);
             await this.TokenHelper.deleteRefreshToken(id);
             res.json({ message: "Logged out successfully." });
+            
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
@@ -114,6 +117,10 @@ class AuthController {
         
         if (admin.resetTokenExpiry < Date.now()) {
         return res.status(400).json({ error: "Reset token has expired." });
+        }
+        
+        if (admin.resetToken != resetToken){
+            return res.status(400).json({error:"Invalid reset token"})
         }
 
         const hashedPassword = await this.PasswordHelper.hashPassword(newPassword);

@@ -1,17 +1,19 @@
 const TokenHelper = require('../../Infrastructures/helpers/token-helper');
 
 class AuthMiddleware {
-    constructor(adminRepository) {
-        this.adminRepository = adminRepository;
+    constructor() {
+        
     }
 
     async authMiddleware(req, res, next) {
         try {
             const token = req.headers.authorization?.split(' ')[1];
+            console.log("token: ", token)
             if (!token) {
                 return res.status(401).json({ error: "Access token is missing." });
             }
-            const payload = TokenHelper.verifyToken(token, process.env.JWT_SECRET);
+
+            const payload = TokenHelper.verifyAccessToken(token);
             req.user = payload;
             console.log("Authenticated user:", payload.email);
             next();
@@ -19,6 +21,10 @@ class AuthMiddleware {
             return res.status(401).json({ error: error.message });
         }
     }
+
+
+
+
 
     adminOnlyMiddleware(req, res, next) {
         if (req.user.role !== 'admin') {
