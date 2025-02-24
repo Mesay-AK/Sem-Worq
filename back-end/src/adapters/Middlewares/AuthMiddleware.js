@@ -15,7 +15,7 @@ class AuthMiddleware {
 
             const payload = TokenHelper.verifyAccessToken(token);
             req.user = payload;
-            console.log("Authenticated user:", payload.email);
+            
             next();
         } catch (error) {
             return res.status(401).json({ error: error.message });

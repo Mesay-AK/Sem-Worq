@@ -28,7 +28,7 @@ class TokenHelper {
 
     static verifyAccessToken(token) {
         try {
-            console.log("checking token: ", token)
+   
             const payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
            
             return payload
@@ -41,19 +41,16 @@ class TokenHelper {
     static async validateRefreshToken(refreshToken) {
         try {
             const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
-            console.log('inside the verification')
 
 
             const storedToken = await redisClient.get(`refreshToken:${decoded.id}`);
 
-            console.log("printing the tokens:")
 
             if (!storedToken || storedToken !== refreshToken) {
 
                 throw new Error('Invalid or expired refresh token');
             }
-            console.log("stored RT: ", storedToken)
-            console.log("refresh: ", refreshToken)
+
 
 
             return decoded;
