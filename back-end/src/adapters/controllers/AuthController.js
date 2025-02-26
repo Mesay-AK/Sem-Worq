@@ -50,7 +50,15 @@ class AuthController {
             }
 
             const accessToken = this.TokenHelper.generateAccessToken({ id: admin._id, role: admin.role, email:admin.email });
+
             const refreshToken = await this.TokenHelper.generateRefreshToken({ id: admin._id, email: admin.email });
+
+            const savedAdmin = {
+                _id: admin.id,
+                name:admin.name,
+                email:admin.email,
+
+            }
 
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
@@ -59,9 +67,9 @@ class AuthController {
                 path: '/',
             });
 
-            console.log('generated token',accessToken)
+            // console.log('generated token',accessToken)
 
-            res.status(200).json({ token: accessToken, user: admin });
+            res.status(200).json({ token: accessToken, user: savedAdmin });
 
         } catch (error) {
             res.status(400).json({ error: error.message });
@@ -75,9 +83,9 @@ class AuthController {
                 throw new Error("Refresh token is required.");
             }
 
-            const payload = await this.TokenHelper.validateRefreshToken(refreshToken);
+            const admin = await this.TokenHelper.validateRefreshToken(refreshToken);
 
-            const newAccessToken =await this.TokenHelper.generateAccessToken({ id: payload.id, role: payload.role, email:admin.email });
+            const newAccessToken =await this.TokenHelper.generateAccessToken({ id: admin.id, role: admin.role, email:admin.email });
 
             res.json({ token: newAccessToken });
 
@@ -159,6 +167,9 @@ class AuthController {
         console.error("Error in forgotPassword:", error);
         res.status(400).json({ error: error.message });
     }
+    }
+    async getAll(req, res) {
+        await this.adminRepository.getAll()
     }
 
 }
