@@ -4,7 +4,6 @@ class AdminEntity {
         this.email = email;
         this.password = password;
         this.role = role;
-        // this.refreshTokens = refreshTokens; 
         this.resetToken = resetToken;
     }
 

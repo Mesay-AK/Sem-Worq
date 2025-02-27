@@ -3,8 +3,11 @@ const Admin = require('../Infrastructures/models/AdminModel');
 class AdminRepository {
     async add(adminData) {
         try {
+            const admin = await new Admin(adminData).save();
             
-            return await new Admin(adminData).save();
+            const {_id, name, email} = admin;
+
+            return {_id, name, email}
 
         } catch (error) {
             console.error("Error in AdminRepository.create:", error.message);
@@ -15,7 +18,7 @@ class AdminRepository {
 
     async findByEmail(email) {
         try {
-            const admin = await Admin.findOne({ email });
+            const admin = await Admin.findOne({email});
             if (!admin) {
                 return 
             }
@@ -30,17 +33,12 @@ class AdminRepository {
 
     async findById(id) {
         try {
-            const admin = await Admin.findById(id);
+            const admin = await Admin.findById({id},'-password -resetToken');
             if (!admin) {
                 throw new Error("Admin with the given ID not found.");
             }
-            const response = {};
-            response._id = admin.id;
-            response.name = admin.name;
-            response.role = admin.role;
-            response.email = admin.email;
 
-            return response;
+            return admin;
         } catch (error) {
             console.error("Error in AdminRepository.findById:", error.message);
             throw new Error("Failed to fetch admin by ID.");
@@ -84,21 +82,40 @@ class AdminRepository {
         }
     }
 
-    async delete(id){
-            const admin = await Admin.findOneAndDelete(id)
-            const response = {};
-            response._id = admin.id;
-            response.name = admin.name;
-            response.role = admin.role;
-            response.email = admin.email;
+    async update(id, updateData) {
+        try {
+            const updatedAdmin = await this.adminModel.findByIdAndUpdate(
+                id, 
+                updateData, 
+                { new: true, select: '-password -resetToken' }
+            );
 
-            return response;
-        
-    }
-    async getAll(){
-        return await Admin.find({}, { id_: 1, name: 1, email:1, role:1});
-        
+            if (!updatedAdmin) throw new Error("Admin not found or update failed.");
+            return updatedAdmin;
+        } catch (error) {
+            throw new Error("Error updating admin: " + error.message);
         }
+    }
+
+
+    async delete(id) {
+        try {
+            const deletedAdmin = await this.adminModel.findByIdAndDelete(id, { select: '_id name email role' });
+
+            if (!deletedAdmin) throw new Error("Admin not found.");
+            return deletedAdmin;
+        } catch (error) {
+            throw new Error("Error deleting admin: " + error.message);
+        }
+    }
+
+    async getAll() {
+        try {
+            return await this.adminModel.find({}, '-password -resetToken') // Retrieves 
+        } catch (error) {
+            throw new Error("Error fetching admins: " + error.message);
+        }
+    }
 }
 
 

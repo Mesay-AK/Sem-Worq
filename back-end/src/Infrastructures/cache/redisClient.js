@@ -14,9 +14,19 @@ redisClient.on('connect', () => {
   console.log('Connected to Redis Cloud');
 });
 
+// const {keys, err} = redisClient.Keys(ctx, "*").Result()
+// if (err != nil ){
+//     log.Fatal(err)
+// }
+// fmt.Println(keys)
+
+
 redisClient.on('error', (err) => {
   console.error('Redis error:', err);
 });
+
+
+
 
 
 

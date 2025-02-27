@@ -169,8 +169,45 @@ class AuthController {
     }
     }
     async getAll(req, res) {
-        await this.adminRepository.getAll()
+        try {
+            const admins = await this.adminRepository.getAll();
+            res.status(200).json({ message: "Admins retrieved successfully", data: admins });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
     }
+
+    async update(req, res) {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        
+        const updatedAdmin = await this.adminRepository.update(id, updateData);
+        if (!updatedAdmin) {
+            return res.status(404).json({ error: "Admin not found or update failed" });
+        }
+
+        res.status(200).json({ message: "Admin updated successfully", data: updatedAdmin });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+
+    async delete(req, res) {
+    try {
+        const { id } = req.params;
+        const deletedAdmin = await this.adminRepository.delete(id);
+        if (!deletedAdmin) {
+            return res.status(404).json({ error: "Admin not found." });
+        }
+
+        res.status(200).json({ message: "Admin deleted successfully", deletedAdmin });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
 
 }
 
