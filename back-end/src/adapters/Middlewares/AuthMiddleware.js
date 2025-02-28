@@ -22,8 +22,20 @@ class AuthMiddleware {
         }
     }
 
+    async selfOnlyMiddleware(req, res, next) {
+        const { id } = req.params; 
+        const userId = req.user.id; 
 
+        if (req.user.role === 'super-admin') {
+            return next(); 
+        }
 
+        if (id !== userId) {
+            return res.status(403).json({ error: "You can only modify your own profile." });
+        }
+
+        next(); 
+    };
 
 
     adminOnlyMiddleware(req, res, next) {
@@ -33,28 +45,6 @@ class AuthMiddleware {
         next();
     }
 
-//     async checkValidRefreshToken(req, res, next) {
-//         try {
-//             const refreshToken = req.cookies.refreshToken;
-//             if (!refreshToken) {
-//                 return res.status(401).json({ error: "Refresh token is required." });
-//             }
-
-//             const decoded = TokenHelper.verifyToken(refreshToken, process.env.JWT_REFRESH_SECRET);
-//             console.log("Decoded refresh token id:", decoded.id);
-
-//             const storedToken = await redisClient.get(`refreshToken:${decoded.id}`);
-//             if (!storedToken || storedToken !== refreshToken) {
-//                 return res.status(401).json({ error: "Invalid or expired refresh token." });
-//             }
-
-//             req.refreshTokenPayload = decoded;
-//             next();
-//         } catch (error) {
-//             return res.status(401).json({ error: error.message });
-//         }
-//     }
-// 
 }
 
 module.exports = AuthMiddleware;

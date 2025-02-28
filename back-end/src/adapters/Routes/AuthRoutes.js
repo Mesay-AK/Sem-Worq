@@ -8,7 +8,6 @@ const TokenHelper = require('../../Infrastructures/helpers/token-helper')
 
 
 
-
 const router = express.Router();
 const repository = new AdminRepository();
 const controller = new AuthController(repository, mailService, PasswordHelper, TokenHelper);
@@ -22,10 +21,15 @@ router.post('/forgot-password', (req, res) => controller.forgotPassword(req, res
 router.post('/reset-password', (req, res) => controller.resetPassword(req, res));
 router.post('/refresh-token',(req, res) => controller.refreshToken(req, res));
 
-router.delete('/delete/:id', (req, res) => controller.delete(req, res))
-
 router.get('/get/:id', Middlware.authMiddleware, Middlware.adminOnlyMiddleware ,(req, res) => controller.getAdmin(req, res))
-
 router.get('/get',Middlware.authMiddleware, Middlware.adminOnlyMiddleware, (req, res) => controller.getAll(req, res))
+
+router.patch('/edit/:id',Middlware.authMiddleware, Middlware.selfOnlyMiddleware, (req, res) => controller.update(req, res))
+
+
+router.delete('/Only_admin/delete/:id', (req, res) => controller.delete(req, res))
+router.delete('/delete/:id',Middlware.authMiddleware, Middlware.selfOnlyMiddleware, (req, res) => controller.delete(req, res))
+
+
 
 module.exports = router;

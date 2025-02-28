@@ -146,13 +146,13 @@ class AuthController {
     try {
         const { email } = req.body;
         if (!email) {
-        return res.status(400).json({ error: "Email is required." });
-        }
+            return res.status(400).json({ error: "Email is required." });
+            }
 
         const admin = await this.adminRepository.findByEmail(email);
         if (!admin) {
-        return res.status(404).json({ error: "Admin with this email does not exist." });
-        }
+            return res.status(404).json({ error: "Admin with this email does not exist." });
+            }
 
         const resetToken = crypto.randomBytes(32).toString('hex');
         const expiryTime = Date.now() + 5 * 60 * 1000; 
@@ -177,11 +177,36 @@ class AuthController {
         }
     }
 
-    async update(req, res) {
+    async getAdmin(req, res) {
+        try {
+            const {id} = req.params;
+            const admins = await this.adminRepository.findById(id);
+            res.status(200).json({ message: "Admins retrieved successfully", data: admins });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+async update(req, res) {
     try {
-        const { id } = req.params;
-        const updateData = req.body;
-        
+        const { id } = req.params; 
+        const updateData = req.body; 
+        const userId = req.user.id; 
+        const userRole = req.user.role; 
+
+
+        if (id !== userId && userRole !== "super-admin") {
+            return res.status(403).json({ error: "You can only update your own profile." });
+        }
+
+        const forbiddenFields = ["password", "role"];
+        forbiddenFields.forEach(field => {
+            if (updateData[field]) {
+                delete updateData[field];
+            }
+        });
+
+
         const updatedAdmin = await this.adminRepository.update(id, updateData);
         if (!updatedAdmin) {
             return res.status(404).json({ error: "Admin not found or update failed" });
