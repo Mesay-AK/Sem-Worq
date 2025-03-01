@@ -38,7 +38,7 @@ class TestimonialEntity {
             throw new Error("Testimonial content must be at least 10 characters long.");
         }
 
-        if (!this.company || this.company.trim().length < 3) {
+        if (this.company && this.company.trim().length < 3) {
             throw new Error("Company Name must be at least 3 characters long.");
         }
     }

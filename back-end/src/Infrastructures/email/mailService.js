@@ -1,25 +1,21 @@
-const nodemailer = require('nodemailer');
+const postmark = require('postmark');
+require("dotenv").config();
 
 class MailService {
     constructor() {
-        this.transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
+        this.client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
     }
 
     async sendEmail(to, subject, text) {
         try {
-            const info = await this.transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to,
-                subject,
-                text,
+            const response = await this.client.sendEmail({
+                From: process.env.EMAIL_FROM,
+                To: to,
+                Subject: subject,
+                TextBody: text,
             });
-            return info;
+            console.log("Email sent:", response.Message);
+            return response;
         } catch (error) {
             console.error('Error sending email:', error);
             throw new Error('Failed to send email');
@@ -34,7 +30,6 @@ class MailService {
 
         return await this.sendEmail(to, subject, text);
     }
-
 }
 
 module.exports = new MailService();

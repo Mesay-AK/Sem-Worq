@@ -1,10 +1,10 @@
 const Admin = require('../Infrastructures/models/AdminModel');
 
+
 class AdminRepository {
     async add(adminData) {
         try {
             const admin = await new Admin(adminData).save();
-            
             const {_id, name, email} = admin;
 
             return {_id, name, email}
@@ -33,7 +33,8 @@ class AdminRepository {
 
     async findById(id) {
         try {
-            const admin = await Admin.findById({id},'-password -resetToken');
+            const admin = await Admin.findById(id, '-password -resetToken');
+;
             if (!admin) {
                 throw new Error("Admin with the given ID not found.");
             }
@@ -59,10 +60,12 @@ class AdminRepository {
     async updateResetToken(id, resetToken, expiry) {
         try {
             return await Admin.findByIdAndUpdate(
-                id,
-                { resetToken, resetTokenExpiry: expiry },
-                { new: true }
-            );
+            id,
+            { resetToken, resetTokenExpiry: expiry },
+            { new: true }
+        );
+
+
         } catch (error) {
             console.error("Error in AdminRepository.updateResetToken:", error);
             throw new Error("Failed to update reset token.");
@@ -84,9 +87,9 @@ class AdminRepository {
 
     async update(id, updateData) {
         try {
-            const updatedAdmin = await this.adminModel.findByIdAndUpdate(
+            const updatedAdmin = await Admin.findByIdAndUpdate(
                 id, 
-                updateData, 
+                {$set: updateData}, 
                 { new: true, select: '-password -resetToken' }
             );
 
@@ -100,10 +103,11 @@ class AdminRepository {
 
     async delete(id) {
         try {
-            const deletedAdmin = await this.adminModel.findByIdAndDelete(id, { select: '_id name email role' });
-
+            const deletedAdmin = await Admin.findByIdAndDelete(id);
             if (!deletedAdmin) throw new Error("Admin not found.");
-            return deletedAdmin;
+            const { _id, name, email, role } = deletedAdmin;
+            return { _id, name, email, role };
+
         } catch (error) {
             throw new Error("Error deleting admin: " + error.message);
         }
@@ -111,7 +115,8 @@ class AdminRepository {
 
     async getAll() {
         try {
-            return await this.adminModel.find({}, '-password -resetToken') // Retrieves 
+            return await Admin.find({}, '-password -resetToken');
+
         } catch (error) {
             throw new Error("Error fetching admins: " + error.message);
         }

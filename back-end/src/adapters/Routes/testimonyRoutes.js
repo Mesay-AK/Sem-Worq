@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.post('/create',Middlware.authMiddleware, Middlware.adminOnlyMiddleware, (req, res) => controller.createTestimonial(req, res)); 
 router.get('/get', (req, res) => controller.listTestimonials(req, res));      
-router.put('/edit/:id',Middlware.authMiddleware, Middlware.adminOnlyMiddleware, (req, res) => controller.updateTestimonial(req, res)); 
+router.patch('/edit/:id',Middlware.authMiddleware, Middlware.adminOnlyMiddleware, (req, res) => controller.updateTestimonial(req, res)); 
 router.delete('/delete/:id',Middlware.authMiddleware, Middlware.adminOnlyMiddleware, (req, res) => controller.deleteTestimonial(req, res)); 
 
 module.exports = router;

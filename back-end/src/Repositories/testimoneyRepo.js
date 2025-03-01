@@ -9,8 +9,8 @@ class TestimonialRepository {
             if (existTestimony) {
                 throw new Error("Testimonial already exists");
             }
-
-            return await testimonial.save(); 
+            const testimony = new Testimonial(testimonialData)
+            return await testimony.save(); 
         } catch (error) {
             console.error("Error in TestimonialRepository.create:", error);
             throw error;
@@ -51,15 +51,21 @@ class TestimonialRepository {
         }
     }
 
-    async update(id, updatedData) {
-        try {
-            const testimonial = await Testimonial.findByIdAndUpdate(id, updatedData, { new: true });
-            return testimonial;
-        } catch (error) {
-            console.error("Error in TestimonialRepository.update:", error);
-            throw new Error("Failed to update testimonial.");
+async update(id, updatedData) {
+    try {
+        const testimonial = await Testimonial.findById(id);
+        if (!testimonial) {
+            throw new Error("Testimonial not found.");
         }
+        const updatedTestimonial = await Testimonial.findByIdAndUpdate(id, updatedData, { new: true });
+
+        return updatedTestimonial;
+    } catch (error) {
+        console.error("Error in TestimonialRepository.update:", error);
+        throw new Error(`Failed to update testimonial: ${error.message}`);
     }
+}
+
 
     async delete(id) {
         try {
