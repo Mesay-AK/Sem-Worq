@@ -17,7 +17,6 @@ class TestimonialRepository {
         }
     }
 
-
     async findAll(filters = {}, page = 1, limit = 10) {
         try {
             const skip = (page - 1) * limit;
@@ -42,14 +41,24 @@ class TestimonialRepository {
         }
     }
 
-    async findById(id) {
-        try {
-            return await Testimonial.findById(id);
-        } catch (error) {
-            console.error("Error in TestimonialRepository.findById:", error);
-            throw new Error("Testimonial not found.");
-        }
-    }
+async findAll(filters = {}, page = 1, limit = 10) {
+     try {
+         const skip = (page - 1) * limit;
+
+         if (page < 1 || limit < 1) {
+             throw new Error("Page and limit must be greater than 0");
+         }
+
+         return await Testimonial.find(filters)
+             .skip(skip)
+             .limit(limit)
+             .sort({ createdAt: -1 });
+     } catch (error) {
+         console.error("Error in TestimonialRepository.findAll:", error);
+         throw new Error("Failed to fetch testimonials.");
+     }
+ }
+
 
 async update(id, updatedData) {
     try {
