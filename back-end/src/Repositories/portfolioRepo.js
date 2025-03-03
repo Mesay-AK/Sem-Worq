@@ -15,6 +15,14 @@ class PortfolioRepository {
             throw new Error("Failed to fetch portfolios. Please try again later.");
         }
     }
+    async findById(id) {
+        try {
+            return await Portfolio.findById(id); 
+        } catch (error) {
+            console.error("Error in PortfolioRepository.findById:", error);
+            throw new Error("Portfolio not found.");
+        }
+    }
 
     async count() {
         try {

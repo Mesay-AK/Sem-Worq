@@ -8,7 +8,7 @@ class TestimonialController {
     async createTestimonial(req, res) {
         try {
             const { name, email, content, company } = req.body;
-            const image = req.file ? req.file.buffer : null; 
+            const image = req.file ? req.file.buffer : null; // Get image as Buffer
 
             const testimonialData = { name, email, content, company, image };
             const testimonialEntity = new TestimonialEntity(testimonialData);
