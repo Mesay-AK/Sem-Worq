@@ -7,9 +7,12 @@ class BlogController {
 
     async createBlog(req, res) {
         try {
-            const {data} = req.body
-            const blogEntity = new BlogEntity(data);
+            const { title, content, author, tags, status } = req.body;
+            const image = req.file ? req.file.buffer : null;
+
+            const blogEntity = new BlogEntity({ title, content, author, tags, status, image });
             blogEntity.validate();
+
             const blog = await this.blogRepository.create(blogEntity);
             res.status(201).json(blog);
         } catch (error) {
@@ -19,23 +22,25 @@ class BlogController {
 
     async updateBlog(req, res) {
         try {
-            const {id} = req.params.id;
-            const {data} = req.body;
+            const { id } = req.params;
+            const { title, content, author, tags, status } = req.body;
+            const image = req.file ? req.file.buffer : undefined;
+
             const existingBlog = await this.blogRepository.findById(id);
             if (!existingBlog) {
                 throw new Error("Blog not found");
             }
 
-            const blogEntity = new BlogEntity({ ...existingBlog.toObject(), ...data });
-            blogEntity.validateOnUpdate();
+            const updatedData = { title, content, author, tags, status };
+            if (image) updatedData.image = image;
 
-            const updatedBlog = await this.blogRepository.update(id, updateData);
-
+            const updatedBlog = await this.blogRepository.update(id, updatedData);
             res.json(updatedBlog);
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
     }
+
 
     async deleteBlog(req, res) {
         try {
@@ -67,91 +72,96 @@ class BlogController {
 
     async getBlog(req, res) {
         try {
-            const {id} = req.id;
+            const { id } = req.params;
             const blog = await this.blogRepository.findById(id);
             if (!blog) {
                 throw new Error("Blog not found");
             }
 
-            res.json(blog);
+            const blogData = blog.toObject();
+            if (blog.image) {
+                blogData.image = `data:image/jpeg;base64,${blog.image.toString('base64')}`;
+            }
+
+            res.json(blogData);
         } catch (error) {
             res.status(404).json({ error: error.message });
         }
     }
 
-async listBlogsAdmin(req, res){
-    try {
-        const filters = {};
+    async listBlogsAdmin(req, res){
+        try {
+            const filters = {};
 
-        if (req.user.role !== 'admin') {
+            if (req.user.role !== 'admin') {
+                filters.status = 'published';
+            }
+            if (req.query.status && req.user.role === 'admin') {
+                filters.status = req.query.status;
+            }
+            if (req.query.author) {
+                filters.author = req.query.author;
+            }
+            if (req.query.tags) {
+                filters.tags = { $in: req.query.tags.split(',') };
+            }
+
+            const page = parseInt(req.query.page, 10) || 1;
+            const limit = parseInt(req.query.limit, 10) || 10;
+
+            const blogs = await this.blogRepository.findAll(filters, page, limit);
+            const total = await this.blogRepository.count(filters);
+
+            const result = {
+                blogs,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
+                },
+            };
+
+            res.json(result);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async listBlogs(req, res) {
+        try {
+            const filters = {};
+
             filters.status = 'published';
-        }
-        if (req.query.status && req.user.role === 'admin') {
-            filters.status = req.query.status;
-        }
-        if (req.query.author) {
-            filters.author = req.query.author;
-        }
-        if (req.query.tags) {
-            filters.tags = { $in: req.query.tags.split(',') };
-        }
+            
+            if (req.query.author) {
+                filters.author = req.query.author;
+            }
+            if (req.query.tags) {
+                filters.tags = { $in: req.query.tags.split(',') };
+            }
 
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 10;
+            const page = parseInt(req.query.page, 10) || 1;
+            const limit = parseInt(req.query.limit, 10) || 10;
 
-        const blogs = await this.blogRepository.findAll(filters, page, limit);
-        const total = await this.blogRepository.count(filters);
+            const blogs = await this.blogRepository.findAll(filters, page, limit);
+            const total = await this.blogRepository.count(filters);
 
-        const result = {
-            blogs,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            },
-        };
+            const result = {
+                blogs,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
+                },
+            };
 
-        res.json(result);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
+            res.json(result);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
     }
-}
-
-async listBlogs(req, res) {
-    try {
-        const filters = {};
-
-        filters.status = 'published';
-        
-        if (req.query.author) {
-            filters.author = req.query.author;
-        }
-        if (req.query.tags) {
-            filters.tags = { $in: req.query.tags.split(',') };
-        }
-
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 10;
-
-        const blogs = await this.blogRepository.findAll(filters, page, limit);
-        const total = await this.blogRepository.count(filters);
-
-        const result = {
-            blogs,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            },
-        };
-
-        res.json(result);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-}
 
 
     async addComment(req, res) {
