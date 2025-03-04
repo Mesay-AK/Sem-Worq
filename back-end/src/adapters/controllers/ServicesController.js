@@ -1,4 +1,5 @@
-const Service = require("../../Domain/ServicesEntity")
+const Service = require("../../Domain/ServicesEntity");
+
 class ServiceController {
   constructor(serviceRepo) {
     this.serviceRepo = serviceRepo;
@@ -6,17 +7,21 @@ class ServiceController {
 
   async createService(req, res) {
     try {
-      const { title, description }  = req.body;
+      const { title, description } = req.body;
+      const image = req.file ? req.file.buffer : null; // Get the image buffer from req.file
 
       if (!title || !description) {
         return res.status(400).json({ message: "Title and description are required." });
       }
 
-      const serviceEntity = new Service({ title, description });
+      if (!image) {
+        return res.status(400).json({ message: "Image is required." });
+      }
+
+      const serviceEntity = new Service({ title, description, image });
       serviceEntity.validate(); 
 
       const newService = new Service(serviceEntity);
-
       const result = await this.serviceRepo.CreateService(newService);
       res.status(201).json(result);
     } catch (err) {
@@ -29,6 +34,11 @@ class ServiceController {
     try {
       const { id } = req.params;
       const updatedFields = req.body;
+      const image = req.file ? req.file.buffer : null; // Get the image buffer from req.file if it exists
+
+      if (image) {
+        updatedFields.image = image; // If the image is provided, update it
+      }
 
       if (!id) throw new Error('Service ID is required for updates.');
 
@@ -57,24 +67,58 @@ class ServiceController {
 
   async listServices(req, res) {
     try {
-            const page = parseInt(req.query.page, 10) || 1;
-            const limit = parseInt(req.query.limit, 10) || 10;
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
 
-            const portfolios = await this.serviceRepo.GetAllServices(page, limit);
-            const total = await this.ServiceRepo.count();
+      const portfolios = await this.serviceRepo.GetAllServices(page, limit);
+      const total = await this.ServiceRepo.count();
 
-            const result = {
-                portfolios,
-                pagination: {
-                    page,
-                    limit,
-                    total,
-                    totalPages: Math.ceil(total / limit),
-                },
-            };
-            res.json(result);
+      const result = {
+        portfolios,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+      res.json(result);
     } catch (err) {
       console.error("Controller error (listServices):", err.message);
+      res.status(500).json({ message: err.message });
+    }
+  }
+
+  // Get a service by its ID
+  async getServiceById(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id) throw new Error("Service ID is required.");
+
+      const service = await this.serviceRepo.GetServiceById(id);
+
+      if (!service) {
+        return res.status(404).json({ message: "Service not found." });
+      }
+
+      // Convert the image buffer to base64 string
+      const base64Image = service.image.toString('base64');
+      const imageUrl = `data:image/png;base64,${base64Image}`;
+
+      // Return the service along with the base64-encoded image
+      res.status(200).json({
+        service: {
+          id: service._id,
+          title: service.title,
+          description: service.description,
+          image: imageUrl,  // Send the base64 image string
+          createdAt: service.createdAt,
+          updatedAt: service.updatedAt,
+        }
+      });
+    } catch (err) {
+      console.error("Controller error (getServiceById):", err.message);
       res.status(500).json({ message: err.message });
     }
   }
