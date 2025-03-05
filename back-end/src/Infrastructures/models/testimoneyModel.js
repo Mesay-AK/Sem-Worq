@@ -9,6 +9,8 @@ const TestimonialSchema = new mongoose.Schema({
     visibility: { type: String, enum: ['public', 'private'], required: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
+},{
+    timestamps: true,  
 });
 
 module.exports = mongoose.model('Testimonial', TestimonialSchema);
