@@ -1,10 +1,10 @@
 class TestimonialEntity {
-    constructor({ name, email, content, company,visibility, image }) {
+    constructor({ name, email, content, company, visibility, image }) {
         this.name = name;
         this.email = email;
         this.content = content;
         this.company = company;
-        this.visibility = visibility
+        this.visibility = visibility;
         this.image = image;
     }
 
@@ -24,12 +24,15 @@ class TestimonialEntity {
         if (!this.company || this.company.trim().length < 3) {
             throw new Error("Company Name must be at least 3 characters long.");
         }
-        if (!['public', 'private'].includes(this.visibility)) {
+
+        const validVisibilities = ['public', 'private'];
+        if (!validVisibilities.includes(this.visibility)) {
             throw new Error("Visibility must be either 'public' or 'private'.");
         }
     }
 
     validateOnUpdate() {
+        // Only validate modified fields
         if (this.name && this.name.trim().length < 3) {
             throw new Error("Testimonial name must be at least 3 characters long.");
         }
@@ -45,7 +48,6 @@ class TestimonialEntity {
         if (this.company && this.company.trim().length < 3) {
             throw new Error("Company Name must be at least 3 characters long.");
         }
-        
     }
 }
 
