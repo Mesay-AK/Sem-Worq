@@ -16,9 +16,7 @@ const BlogSchema = new mongoose.Schema({
     }, 
     tags: { type: [String], default: [] },
     comments: [CommentSchema], 
-    liked: [String], 
-    likeCount: { type: Number, default: 0 }, 
-    disliked: [String],   
+    likeCount: { type: Number, default: 0 },  
     dislikeCount: { type: Number, default: 0 },
     status: { type: String, required: true },
 }, { timestamps: true }); 

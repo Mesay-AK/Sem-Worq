@@ -83,11 +83,11 @@ class BlogRepository {
         if (feedback == "liked"){
             blog.likeCount += 1;
 
-            return await this.updateFeedback(blogID, { liked, likeCount });
+            return await this.updateFeedback(blogID, { likeCount: blog.likeCount });
 
         }else{
             blog.dislikeCount += 1;
-            return await this.updateFeedback(blogID,{disliked, dislikeCount})
+            return await this.updateFeedback(blogID,{dislikeCount: blog.dislikeCount})
         }
     }
     async updateFeedback(blogId, feedback){

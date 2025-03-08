@@ -134,60 +134,51 @@ describe('BlogRepository', () => {
         });
     });
 
-        describe('getLikes', () => {
-        it('should return like count for a blog', async () => {
-            const mockBlog = { _id: '123', likeCount: 10 };
+     describe('getLikes', () => {
+    it('should return like count for a blog', async () => {
+        const mockBlog = { _id: '123', likeCount: 10 };
 
-            BlogModel.findById.mockResolvedValue(mockBlog);
-
-            const result = await blogRepository.getLikes('123');
-
-            expect(result).toBe(10);
+        jest.spyOn(BlogModel, 'findById').mockReturnValue({
+            select: jest.fn().mockResolvedValue(mockBlog)  // Mock select() properly
         });
 
-        it('should throw error if blog not found for getLikes', async () => {
-            BlogModel.findById.mockResolvedValue(null);
+        const result = await blogRepository.getLikes('123');
 
-            await expect(blogRepository.getLikes('123'))
-                .rejects
-                .toThrow('Blog not found');
-        });
-
-        // it('should throw error if getLikes fails', async () => {
-        //     BlogModel.findById.mockRejectedValue(new Error('Database Error'));
-
-        //     await expect(blogRepository.getLikes('123'))
-        //         .rejects
-        //         .toThrow('Database Error');
-        // });
+        expect(result).toBe(10);
     });
 
-    // Test for getDislikes method
-    describe('getDislikes', () => {
-        it('should return dislike count for a blog', async () => {
-            const mockBlog = { _id: '123', dislikeCount: 5 };
-
-            BlogModel.findById.mockResolvedValue(mockBlog);
-
-            const result = await blogRepository.getDislikes('123');
-
-            expect(result).toBe(5);
+    it('should throw an error if blog is not found for getLikes', async () => {
+        jest.spyOn(BlogModel, 'findById').mockReturnValue({
+            select: jest.fn().mockResolvedValue(null)  // Ensure select() returns null
         });
 
-        it('should throw error if blog not found for getDislikes', async () => {
-            BlogModel.findById.mockResolvedValue(null);
-
-            await expect(blogRepository.getDislikes('123'))
-                .rejects
-                .toThrow('Blog not found');
-        });
-
-        // it('should throw error if getDislikes fails', async () => {
-        //     BlogModel.findById.mockRejectedValue(new Error('Database Error'));
-
-        //     await expect(blogRepository.getDislikes('123'))
-        //         .rejects
-        //         .toThrow('Database Error');
-        // });
+        await expect(blogRepository.getLikes('123')).rejects.toThrow('Blog not found');
     });
+
+});
+
+describe('getDislikes', () => {
+    it('should return dislike count for a blog', async () => {
+        const mockBlog = { _id: '123', dislikeCount: 5 };
+
+        jest.spyOn(BlogModel, 'findById').mockReturnValue({
+            select: jest.fn().mockResolvedValue(mockBlog)  // Mock select() properly
+        });
+
+        const result = await blogRepository.getDislikes('123');
+
+        expect(result).toBe(5);
+    });
+
+    it('should throw an error if blog is not found for getDislikes', async () => {
+        jest.spyOn(BlogModel, 'findById').mockReturnValue({
+            select: jest.fn().mockResolvedValue(null)  // Ensure select() returns null
+        });
+
+        await expect(blogRepository.getDislikes('123')).rejects.toThrow('Blog not found');
+    });
+
+});
+
+
 });
