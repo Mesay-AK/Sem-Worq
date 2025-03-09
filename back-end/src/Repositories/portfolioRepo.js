@@ -1,12 +1,11 @@
 const Portfolio = require("../Infrastructures/models/portfolioModel");
 
 class PortfolioRepository {
-    ErrFound = new Error ("Portifolio already exists")
 
     async findAll(page = 1, limit = 10) {
         try {
             const skip = (page - 1) * limit;
-            return await Portfolio.find(filters)
+            return await Portfolio.find({})
                 .skip(skip)
                 .limit(limit)
                 .sort({ date: -1 });
@@ -15,12 +14,19 @@ class PortfolioRepository {
             throw new Error("Failed to fetch portfolios. Please try again later.");
         }
     }
+
     async findById(id) {
         try {
-            return await Portfolio.findById(id); 
+            const portfolio = await Portfolio.findById(id);
+            if (!portfolio) {
+                throw new Error("Portfolio not found.");
+            }
+            return portfolio;
         } catch (error) {
-            console.error("Error in PortfolioRepository.findById:", error);
-            throw new Error("Portfolio not found.");
+        if (error.message === "Portfolio not found.") {
+            throw error; 
+        }
+        throw new Error("Failed to fetch portfolio.");
         }
     }
 
@@ -28,42 +34,40 @@ class PortfolioRepository {
         try {
             return await Portfolio.countDocuments();
         } catch (error) {
-            console.error("Error in PortfolioRepository.count:", error);
+
             throw new Error("Failed to count portfolios. Please try again later.");
         }
     }
 
-
     async create(portfolioData) {
         try {
-
-        const existingPortfolio = await Portfolio.findOne({ title: portfolioData.title });
-        if (existingPortfolio) {
-            throw this.ErrFound;
-        }
-        const portfolio = new Portfolio(portfolioData);
+            const existingPortfolio = await Portfolio.findOne({ title: portfolioData.title });
+            if (existingPortfolio) {
+                throw new Error("Portfolio already exists.");
+            }
+            const portfolio = new Portfolio(portfolioData);
             return await portfolio.save();
-
         } catch (error) {
-            if (error == this.ErrFound){
-                throw error
+            if (error.message === "Portfolio already exists.") {
+                throw error;
             }
             console.error("Error in PortfolioRepository.create:", error);
             throw new Error("Failed to create portfolio. Please check your input.");
         }
     }
-
     async updateById(id, updateData) {
         try {
             const portfolio = await Portfolio.findByIdAndUpdate(id, updateData, { new: true });
 
             if (!portfolio) {
-                throw new Error("Portfolio not found.")
+                throw new Error("Portfolio not found."); 
             }
             return portfolio;
         } catch (error) {
-            console.error("Error in PortfolioRepository.updateById:", error);
-            throw new Error("Failed to update portfolio. Please try again later.");
+            if (error.message === "Portfolio not found.") {
+                throw error; 
+            }
+            throw new Error("Failed to update portfolio. Please try again later."); 
         }
     }
 
@@ -71,14 +75,17 @@ class PortfolioRepository {
         try {
             const result = await Portfolio.findByIdAndDelete(id);
             if (!result) {
-                return new Error("Portfolio not found.");
+                throw new Error("Portfolio not found."); 
             }
             return result;
         } catch (error) {
-            console.error("Error in PortfolioRepository.deleteById:", error);
-            throw new Error("Failed to delete portfolio. Please try again later.");
+            if (error.message === "Portfolio not found.") {
+                throw error; 
+            }
+            throw new Error("Failed to delete portfolio. Please try again later."); 
         }
     }
+
 }
 
-module.exports = PortfolioRepository ;
+module.exports = PortfolioRepository;
