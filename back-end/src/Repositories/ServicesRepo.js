@@ -1,23 +1,23 @@
 const ServiceModel = require("../Infrastructures/models/ServicesModel");
 
 class ServiceRepository {
-
-  async CreateService(service) {
+  
+  async createService(service) {
     try {
-      const checkExistance = await ServiceModel.findOne({ title: service.title });
+      const existingService = await ServiceModel.findOne({ title: service.title });
 
-      if (checkExistance) {
-        throw new Error("Service already Exists.");
+      if (existingService) {
+        throw new Error("Service already exists.");
       }
+      
       const newService = new ServiceModel(service);
       return await newService.save();
     } catch (error) {
-      console.error("Error in repository (createService):", error.message);
       throw new Error(`Error while creating service: ${error.message}`);
     }
   }
 
-  async UpdateService(id, updatedFields) {
+  async updateService(id, updatedFields) {
     try {
       const updatedService = await ServiceModel.findByIdAndUpdate(id, updatedFields, { new: true });
 
@@ -27,12 +27,11 @@ class ServiceRepository {
 
       return updatedService;
     } catch (error) {
-      console.error("Error in repository (updateService):", error.message);
       throw new Error(`Error updating service: ${error.message}`);
     }
   }
 
-  async DeleteService(id) {
+  async deleteService(id) {
     try {
       const deletedService = await ServiceModel.findByIdAndDelete(id);
 
@@ -42,20 +41,18 @@ class ServiceRepository {
 
       return deletedService;
     } catch (error) {
-      console.error("Error in repository (deleteService):", error.message);
       throw new Error(`Error deleting service: ${error.message}`);
     }
   }
 
-  async GetAllServices(page = 1, limit = 10) {
+  async getAllServices(page = 1, limit = 10) {
     try {
       const skip = (page - 1) * limit;
       return await ServiceModel.find()
         .skip(skip)
         .limit(limit)
-        .sort({ createdAt: -1 }); // sort by createdAt instead of date
+        .sort({ createdAt: -1 });
     } catch (error) {
-      console.error("Error in repository (getAllServices):", error.message);
       throw new Error(`Error retrieving services: ${error.message}`);
     }
   }
@@ -64,13 +61,11 @@ class ServiceRepository {
     try {
       return await ServiceModel.countDocuments();
     } catch (error) {
-      console.error("Error in ServiceRepository.count:", error);
-      throw new Error("Failed to count services. Please try again later.");
+      throw new Error(`Error while counting services: ${error.message}`);
     }
   }
 
-
-  async GetServiceById(id) {
+  async getServiceById(id) {
     try {
       const service = await ServiceModel.findById(id);
       if (!service) {
@@ -78,7 +73,6 @@ class ServiceRepository {
       }
       return service;
     } catch (error) {
-      console.error("Error in repository (GetServiceById):", error.message);
       throw new Error(`Error retrieving service: ${error.message}`);
     }
   }

@@ -1,226 +1,154 @@
-// serviceRepository.test.js
-const ServiceModel = require('../../Infrastructures/models/ServicesModel');
-const ServiceRepository = require('../../repositories/serviceRepository');
+const ServiceRepository = require("../../Repositories/ServicesRepo");
+const ServiceModel = require("../../Infrastructures/models/ServicesModel");
 
-// Mock the ServiceModel methods
-jest.mock('../../Infrastructures/models/ServicesModel');
+jest.mock("../../Infrastructures/models/ServicesModel");
 
-describe('ServiceRepository', () => {
-    let serviceRepository;
+describe("ServiceRepository", () => {
+  let serviceRepository;
 
-    beforeEach(() => {
-        serviceRepository = new ServiceRepository();
+  beforeEach(() => {
+    serviceRepository = new ServiceRepository();
+    jest.clearAllMocks();
+  });
+
+  describe("createService", () => {
+    it("should create a new service successfully", async () => {
+      const serviceData = { title: "Web Design", description: "Professional web design services" };
+      ServiceModel.findOne.mockResolvedValue(null); 
+      ServiceModel.prototype.save = jest.fn().mockResolvedValue(serviceData);
+
+      const result = await serviceRepository.createService(serviceData);
+
+      expect(ServiceModel.findOne).toHaveBeenCalledWith({ title: serviceData.title });
+      expect(ServiceModel.prototype.save).toHaveBeenCalled();
+      expect(result).toEqual(serviceData);
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    it("should throw an error if service already exists", async () => {
+      const serviceData = { title: "Web Design" };
+      ServiceModel.findOne.mockResolvedValue(serviceData);
+
+      await expect(serviceRepository.createService(serviceData)).rejects.toThrow("Service already exists.");
     });
 
-    // Test for CreateService method
-    describe('CreateService', () => {
-        it('should create a service if it does not already exist', async () => {
-            const serviceData = { title: 'Service 1', description: 'Description of service 1' };
-            const mockService = { _id: '123', ...serviceData };
+    it("should throw an error if database operation fails", async () => {
+      const serviceData = { title: "Web Development" };
+      ServiceModel.findOne.mockRejectedValue(new Error("Database error"));
 
-            // Simulate no existing service with the same title
-            ServiceModel.findOne.mockResolvedValue(null);
-            ServiceModel.prototype.save.mockResolvedValue(mockService);
+      await expect(serviceRepository.createService(serviceData)).rejects.toThrow("Error while creating service: Database error");
+    });
+  });
 
-            const result = await serviceRepository.CreateService(serviceData);
+  describe("updateService", () => {
+    it("should update an existing service successfully", async () => {
+      const serviceId = "123";
+      const updateData = { title: "Updated Service" };
+      ServiceModel.findByIdAndUpdate.mockResolvedValue({ _id: serviceId, ...updateData });
 
-            expect(result).toEqual(mockService);
-            expect(ServiceModel.findOne).toHaveBeenCalledWith({ title: serviceData.title });
-            expect(ServiceModel.prototype.save).toHaveBeenCalled();
-        });
+      const result = await serviceRepository.updateService(serviceId, updateData);
 
-        it('should throw an error if service already exists', async () => {
-            const serviceData = { title: 'Service 1', description: 'Description of service 1' };
-
-            // Simulate that the service already exists
-            ServiceModel.findOne.mockResolvedValue(true);
-
-            await expect(serviceRepository.CreateService(serviceData))
-                .rejects
-                .toThrow('Service already Exists.');
-        });
-
-        it('should throw an error if creating service fails', async () => {
-            const serviceData = { title: 'Service 1', description: 'Description of service 1' };
-
-            // Simulate an error during saving
-            ServiceModel.findOne.mockResolvedValue(null);
-            ServiceModel.prototype.save.mockRejectedValue(new Error('Save failed'));
-
-            await expect(serviceRepository.CreateService(serviceData))
-                .rejects
-                .toThrow('Error while creating service: Save failed');
-        });
+      expect(ServiceModel.findByIdAndUpdate).toHaveBeenCalledWith(serviceId, updateData, { new: true });
+      expect(result).toEqual({ _id: serviceId, ...updateData });
     });
 
-    // Test for UpdateService method
-    describe('UpdateService', () => {
-        it('should update the service if found', async () => {
-            const id = '123';
-            const updatedFields = { title: 'Updated Service' };
-            const updatedService = { _id: '123', ...updatedFields };
+    it("should throw an error if service to update is not found", async () => {
+      const serviceId = "123";
+      ServiceModel.findByIdAndUpdate.mockResolvedValue(null);
 
-            // Simulate finding and updating the service
-            ServiceModel.findByIdAndUpdate.mockResolvedValue(updatedService);
-
-            const result = await serviceRepository.UpdateService(id, updatedFields);
-
-            expect(result).toEqual(updatedService);
-            expect(ServiceModel.findByIdAndUpdate).toHaveBeenCalledWith(id, updatedFields, { new: true });
-        });
-
-        it('should throw an error if the service to update is not found', async () => {
-            const id = '123';
-            const updatedFields = { title: 'Updated Service' };
-
-            // Simulate service not found for update
-            ServiceModel.findByIdAndUpdate.mockResolvedValue(null);
-
-            await expect(serviceRepository.UpdateService(id, updatedFields))
-                .rejects
-                .toThrow('Service with ID 123 not found.');
-        });
-
-        it('should throw an error if updating service fails', async () => {
-            const id = '123';
-            const updatedFields = { title: 'Updated Service' };
-
-            // Simulate error during update
-            ServiceModel.findByIdAndUpdate.mockRejectedValue(new Error('Update failed'));
-
-            await expect(serviceRepository.UpdateService(id, updatedFields))
-                .rejects
-                .toThrow('Error updating service: Update failed');
-        });
+      await expect(serviceRepository.updateService(serviceId, { title: "New Title" })).rejects.toThrow(`Service with ID ${serviceId} not found.`);
     });
 
-    // Test for DeleteService method
-    describe('DeleteService', () => {
-        it('should delete the service if found', async () => {
-            const id = '123';
-            const mockDeletedService = { _id: '123', title: 'Service 1', description: 'Description' };
+    it("should throw an error if database operation fails", async () => {
+      ServiceModel.findByIdAndUpdate.mockRejectedValue(new Error("Database error"));
 
-            // Simulate service being deleted
-            ServiceModel.findByIdAndDelete.mockResolvedValue(mockDeletedService);
+      await expect(serviceRepository.updateService("123", { title: "New Title" })).rejects.toThrow("Error updating service: Database error");
+    });
+  });
 
-            const result = await serviceRepository.DeleteService(id);
+  describe("deleteService", () => {
+    it("should delete a service successfully", async () => {
+      const serviceId = "123";
+      ServiceModel.findByIdAndDelete.mockResolvedValue({ _id: serviceId });
 
-            expect(result).toEqual(mockDeletedService);
-            expect(ServiceModel.findByIdAndDelete).toHaveBeenCalledWith(id);
-        });
+      const result = await serviceRepository.deleteService(serviceId);
 
-        it('should throw an error if the service to delete is not found', async () => {
-            const id = '123';
-
-            // Simulate service not found for deletion
-            ServiceModel.findByIdAndDelete.mockResolvedValue(null);
-
-            await expect(serviceRepository.DeleteService(id))
-                .rejects
-                .toThrow('Service with ID 123 not found.');
-        });
-
-        it('should throw an error if deleting service fails', async () => {
-            const id = '123';
-
-            // Simulate error during deletion
-            ServiceModel.findByIdAndDelete.mockRejectedValue(new Error('Delete failed'));
-
-            await expect(serviceRepository.DeleteService(id))
-                .rejects
-                .toThrow('Error deleting service: Delete failed');
-        });
+      expect(ServiceModel.findByIdAndDelete).toHaveBeenCalledWith(serviceId);
+      expect(result).toEqual({ _id: serviceId });
     });
 
-    // Test for GetAllServices method
-    describe('GetAllServices', () => {
-        it('should return all services with pagination', async () => {
-            const page = 1;
-            const limit = 10;
-            const mockServices = [{ _id: '123', title: 'Service 1', description: 'Description' }];
-            const skip = (page - 1) * limit;
+    it("should throw an error if service to delete is not found", async () => {
+      ServiceModel.findByIdAndDelete.mockResolvedValue(null);
 
-            // Simulate finding all services
-            ServiceModel.find.mockResolvedValue(mockServices);
-
-            const result = await serviceRepository.GetAllServices(page, limit);
-
-            expect(result).toEqual(mockServices);
-            expect(ServiceModel.find).toHaveBeenCalledWith(expect.objectContaining({}));
-            expect(ServiceModel.find).toHaveBeenCalledWith(expect.objectContaining({}))
-        });
-
-        it('should throw an error if fetching services fails', async () => {
-            const page = 1;
-            const limit = 10;
-
-            // Simulate failure of fetching services
-            ServiceModel.find.mockRejectedValue(new Error('Find failed'));
-
-            await expect(serviceRepository.GetAllServices(page, limit))
-                .rejects
-                .toThrow('Error retrieving services: Find failed');
-        });
+      await expect(serviceRepository.deleteService("123")).rejects.toThrow("Service with ID 123 not found.");
     });
 
-    // Test for count method
-    describe('count', () => {
-        it('should return the total count of services', async () => {
-            const totalServices = 5;
+    it("should throw an error if database operation fails", async () => {
+      ServiceModel.findByIdAndDelete.mockRejectedValue(new Error("Database error"));
 
-            // Simulate countDocuments operation
-            ServiceModel.countDocuments.mockResolvedValue(totalServices);
+      await expect(serviceRepository.deleteService("123")).rejects.toThrow("Error deleting service: Database error");
+    });
+  });
 
-            const result = await serviceRepository.count();
 
-            expect(result).toBe(totalServices);
-            expect(ServiceModel.countDocuments).toHaveBeenCalled();
-        });
+  describe("getAllServices", () => {
+    it("should return a list of services", async () => {
+      const services = [{ title: "Service 1" }, { title: "Service 2" }];
+      ServiceModel.find.mockReturnValue({ skip: jest.fn().mockReturnThis(), limit: jest.fn().mockReturnThis(), sort: jest.fn().mockResolvedValue(services) });
 
-        it('should throw an error if counting services fails', async () => {
-            // Simulate countDocuments failure
-            ServiceModel.countDocuments.mockRejectedValue(new Error('Count failed'));
+      const result = await serviceRepository.getAllServices(1, 10);
 
-            await expect(serviceRepository.count())
-                .rejects
-                .toThrow('Failed to count services. Please try again later.');
-        });
+      expect(ServiceModel.find).toHaveBeenCalled();
+      expect(result).toEqual(services);
     });
 
-    // Test for GetServiceById method
-    describe('GetServiceById', () => {
-        it('should return service if found by ID', async () => {
-            const mockService = { _id: '123', title: 'Service 1', description: 'Description' };
+    it("should throw an error if fetching services fails", async () => {
+      ServiceModel.find.mockImplementation(() => { throw new Error("Database error"); });
 
-            // Simulate finding a service by ID
-            ServiceModel.findById.mockResolvedValue(mockService);
-
-            const result = await serviceRepository.GetServiceById('123');
-
-            expect(result).toEqual(mockService);
-            expect(ServiceModel.findById).toHaveBeenCalledWith('123');
-        });
-
-        it('should throw an error if service is not found by ID', async () => {
-            // Simulate service not found
-            ServiceModel.findById.mockResolvedValue(null);
-
-            await expect(serviceRepository.GetServiceById('123'))
-                .rejects
-                .toThrow('Service with ID 123 not found.');
-        });
-
-        it('should throw an error if fetching service fails', async () => {
-            // Simulate error during findById
-            ServiceModel.findById.mockRejectedValue(new Error('Find failed'));
-
-            await expect(serviceRepository.GetServiceById('123'))
-                .rejects
-                .toThrow('Error retrieving service: Find failed');
-        });
+      await expect(serviceRepository.getAllServices()).rejects.toThrow("Error retrieving services: Database error");
     });
+  });
+
+
+  describe("count", () => {
+    it("should return the correct count of services", async () => {
+      ServiceModel.countDocuments.mockResolvedValue(5);
+
+      const result = await serviceRepository.count();
+
+      expect(ServiceModel.countDocuments).toHaveBeenCalled();
+      expect(result).toBe(5);
+    });
+
+    it("should throw an error if count operation fails", async () => {
+      ServiceModel.countDocuments.mockRejectedValue(new Error("Database error"));
+
+      await expect(serviceRepository.count()).rejects.toThrow("Error while counting services: Database error");
+    });
+  });
+
+
+  describe("getServiceById", () => {
+    it("should return a service by ID", async () => {
+      const serviceId = "123";
+      const service = { _id: serviceId, title: "Test Service" };
+      ServiceModel.findById.mockResolvedValue(service);
+
+      const result = await serviceRepository.getServiceById(serviceId);
+
+      expect(ServiceModel.findById).toHaveBeenCalledWith(serviceId);
+      expect(result).toEqual(service);
+    });
+
+    it("should throw an error if service is not found", async () => {
+      ServiceModel.findById.mockResolvedValue(null);
+
+      await expect(serviceRepository.getServiceById("123")).rejects.toThrow("Service with ID 123 not found.");
+    });
+
+    it("should throw an error if database operation fails", async () => {
+      ServiceModel.findById.mockRejectedValue(new Error("Database error"));
+
+      await expect(serviceRepository.getServiceById("123")).rejects.toThrow("Error retrieving service: Database error");
+    });
+  });
 });
