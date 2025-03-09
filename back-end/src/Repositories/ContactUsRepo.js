@@ -1,17 +1,15 @@
 const ContactUsModel = require('../Infrastructures/models/ContactUsModel');
 
 class contactRepository {
-    async createContactUs(contactData){
-      try {
-        const newMessage = new ContactUsModel(contactData);
-        await newMessage.save();
-        return newMessage; 
-      } catch (err) {
-        console.error('Error saving message:', err);
-        throw new Error('Error saving the contact message');
-      }
-    };
-
+    async createContactUs(contactData) {
+        try {
+            const newMessage = new ContactUsModel(contactData);
+            const savedMessage = await newMessage.save(); 
+            return savedMessage; 
+        } catch (err) {
+            throw new Error('Failed to create contact message. Please check the provided data.');
+        }
+    }
 
     async getContactsUs (page, limit, sortOrder){
       try {
@@ -28,24 +26,33 @@ class contactRepository {
 
         return { messages, totalItems };
       } catch (err) {
-        console.error('Error retrieving messages:', err);
+        
         throw new Error('Error retrieving contact messages');
       }
     };
 
-    async deleteContactUs (messageId) {
-      try {
-        
-        const deletedMessage = await ContactUsModel.findByIdAndDelete(messageId);
-        if (!deletedMessage) {
-          console.log("the found contact: ", message)
-          throw new Error('Message not found');
+      async getContactById(messageId) {
+        try {
+            const contact = await ContactUsModel.findById(messageId);
+            return contact;
+        } catch (err) {
+           
+            throw new Error('Error retrieving contact message');
         }
-        return deletedMessage;
-      } catch (err) {
-        console.error('Error deleting message in repo:', err);
-        throw new Error('Error deleting the contact message');
-      }
-    };
+    }
+
+    async deleteContactUs(messageId) {
+        try {
+            const deletedMessage = await ContactUsModel.findByIdAndDelete(messageId);
+            if (!deletedMessage) {
+                throw new Error('Message not found'); 
+                
+            }
+            return deletedMessage;
+        } catch (err) {
+            throw new Error(err.message || 'Error deleting the contact message');
+        }
+    }
+
 }
 module.exports = contactRepository;

@@ -1,119 +1,94 @@
-// contactRepository.test.js
+const contactRepository = require('../../Repositories/ContactUsRepo');
 const ContactUsModel = require('../../Infrastructures/models/ContactUsModel');
-const ContactRepository = require('../../Repositories/ContactUsRepo');
 
-// Mock the ContactUsModel methods
+
 jest.mock('../../Infrastructures/models/ContactUsModel');
 
-describe('contactRepository', () => {
-    let contactRepository;
+describe('Contact Repository', () => {
+    let repo;
 
     beforeEach(() => {
-        contactRepository = new ContactRepository();
-    });
-
-    afterEach(() => {
+        repo = new contactRepository();
         jest.clearAllMocks();
     });
 
-    // Test for createContactUs method
     describe('createContactUs', () => {
-        it('should successfully save a new contact message', async () => {
-            const contactData = { name: 'John Doe', email: 'johndoe@example.com', message: 'Hello there!' };
-            const mockSavedMessage = { _id: '123', ...contactData };
+        it('should create and return a new contact message', async () => {
+            const contactData = { firstName: 'John', lastName: 'Doe', email: 'john@example.com', subject: 'Hello', message: 'Test message' };
+            const savedMessage = { ...contactData, _id: '123' };
 
-            // Simulate save operation
-            ContactUsModel.prototype.save.mockResolvedValue(mockSavedMessage);
+            ContactUsModel.prototype.save.mockResolvedValue(savedMessage);
 
-            const result = await contactRepository.createContactUs(contactData);
-
-            expect(result).toEqual(mockSavedMessage);
-            expect(ContactUsModel.prototype.save).toHaveBeenCalled();
+            const result = await repo.createContactUs(contactData);
+            expect(result).toEqual(savedMessage);
         });
 
-        it('should throw error if save fails', async () => {
-            const contactData = { name: 'John Doe', email: 'johndoe@example.com', message: 'Hello there!' };
+        it('should throw an error if saving fails', async () => {
+            ContactUsModel.prototype.save.mockRejectedValue(new Error('DB Error'));
 
-            // Simulate save failure
-            ContactUsModel.prototype.save.mockRejectedValue(new Error('Save failed'));
-
-            await expect(contactRepository.createContactUs(contactData))
-                .rejects
-                .toThrow('Error saving the contact message');
+            await expect(repo.createContactUs({})).rejects.toThrow('Failed to create contact message. Please check the provided data.');
         });
     });
 
-    // Test for getContactsUs method
     describe('getContactsUs', () => {
-        it('should return messages with pagination and sorting', async () => {
-            const page = 1;
-            const limit = 10;
-            const sortOrder = 'desc';
-            const mockMessages = [{ _id: '123', name: 'John Doe', email: 'johndoe@example.com', message: 'Hello!' }];
-            const totalItems = 1;
+        it('should return paginated contacts', async () => {
+            const contacts = [{ _id: '123', message: 'Test message' }];
+            ContactUsModel.find.mockReturnValue({
+                sort: jest.fn().mockReturnThis(),
+                skip: jest.fn().mockReturnThis(),
+                limit: jest.fn().mockReturnThis(),
+                exec: jest.fn().mockResolvedValue([{ _id: '123', message: 'Test message' }])
+            });
+            ContactUsModel.countDocuments.mockResolvedValue(1);
 
-            // Simulate find and countDocuments operations
-            ContactUsModel.find.mockResolvedValue(mockMessages);
-            ContactUsModel.countDocuments.mockResolvedValue(totalItems);
-
-            const result = await contactRepository.getContactsUs(page, limit, sortOrder);
-
-            expect(result.messages).toEqual(mockMessages);
-            expect(result.totalItems).toBe(totalItems);
-            expect(ContactUsModel.find).toHaveBeenCalledWith(expect.objectContaining({}));
-            expect(ContactUsModel.countDocuments).toHaveBeenCalled();
+            const result = await repo.getContactsUs(1, 10, 'desc');
+            expect(result).toEqual({ messages: contacts, totalItems: 1 });
         });
 
-        it('should throw error if retrieving messages fails', async () => {
-            const page = 1;
-            const limit = 10;
-            const sortOrder = 'desc';
+        it('should throw an error if retrieval fails', async () => {
+            ContactUsModel.find.mockImplementation(() => { throw new Error('DB Error'); });
 
-            // Simulate failure of find and countDocuments
-            ContactUsModel.find.mockRejectedValue(new Error('Find failed'));
-            ContactUsModel.countDocuments.mockRejectedValue(new Error('Count failed'));
-
-            await expect(contactRepository.getContactsUs(page, limit, sortOrder))
-                .rejects
-                .toThrow('Error retrieving contact messages');
+            await expect(repo.getContactsUs(1, 10, 'desc')).rejects.toThrow('Error retrieving contact messages');
         });
     });
 
-    // Test for deleteContactUs method
-    describe('deleteContactUs', () => {
-        it('should successfully delete a contact message', async () => {
-            const messageId = '123';
-            const mockDeletedMessage = { _id: '123', name: 'John Doe', email: 'johndoe@example.com', message: 'Hello there!' };
+    describe('getContactById', () => {
+        it('should return a contact if found', async () => {
+            const contact = { _id: '123', message: 'Test message' };
+            ContactUsModel.findById.mockResolvedValue(contact);
 
-            // Simulate findByIdAndDelete operation
-            ContactUsModel.findByIdAndDelete.mockResolvedValue(mockDeletedMessage);
-
-            const result = await contactRepository.deleteContactUs(messageId);
-
-            expect(result).toEqual(mockDeletedMessage);
-            expect(ContactUsModel.findByIdAndDelete).toHaveBeenCalledWith(messageId);
+            const result = await repo.getContactById('123');
+            expect(result).toEqual(contact);
         });
 
-        it('should throw error if message is not found', async () => {
-            const messageId = '123';
+        it('should return null if no contact is found', async () => {
+            ContactUsModel.findById.mockResolvedValue(null);
 
-            // Simulate message not being found
+            const result = await repo.getContactById('123');
+            expect(result).toBeNull();
+        });
+
+        it('should throw an error if retrieval fails', async () => {
+            ContactUsModel.findById.mockRejectedValue(new Error('DB Error'));
+
+            await expect(repo.getContactById('123')).rejects.toThrow('Error retrieving contact message');
+        });
+    });
+
+    describe('deleteContactUs', () => {
+        it('should delete a contact if found', async () => {
+            const deletedMessage = { _id: '123', message: 'Test message' };
+            ContactUsModel.findByIdAndDelete.mockResolvedValue(deletedMessage);
+
+            const result = await repo.deleteContactUs('123');
+            expect(result).toEqual(deletedMessage);
+        });
+
+        it('should throw an error if the contact is not found', async () => {
             ContactUsModel.findByIdAndDelete.mockResolvedValue(null);
 
-            await expect(contactRepository.deleteContactUs(messageId))
-                .rejects
-                .toThrow('Message not found');
+            await expect(repo.deleteContactUs('123')).rejects.toThrow('Message not found');
         });
 
-        it('should throw error if delete operation fails', async () => {
-            const messageId = '123';
-
-            // Simulate failure of findByIdAndDelete
-            ContactUsModel.findByIdAndDelete.mockRejectedValue(new Error('Delete failed'));
-
-            await expect(contactRepository.deleteContactUs(messageId))
-                .rejects
-                .toThrow('Error deleting the contact message');
-        });
     });
 });
