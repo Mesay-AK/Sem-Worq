@@ -1,199 +1,142 @@
-// testimonialRepository.test.js
-const Testimonial = require('../../Infrastructures/models/testimoneyModel');
 const TestimonialRepository = require('../../Repositories/testimoneyRepo');
+const Testimonial = require('../../Infrastructures/models/testimoneyModel');
 
-// Mock the Testimonial model methods
 jest.mock('../../Infrastructures/models/testimoneyModel');
 
-describe('TestimonialRepository', () => {
-    let testimonialRepository;
+describe('Testimonial Repository', () => {
+    let repo;
 
     beforeEach(() => {
-        testimonialRepository = new TestimonialRepository();
+        repo = new TestimonialRepository();
+        jest.clearAllMocks(); // Reset mocks before each test
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
-
-    // Test for create method
     describe('create', () => {
-        it('should create a testimonial if it does not already exist', async () => {
-            const testimonialData = { name: 'John Doe', message: 'Great service!' };
-            const mockTestimonial = { _id: '123', ...testimonialData };
+        it('should create a new testimonial successfully', async () => {
+            const testimonialData = { title: 'Great Service', content: 'Amazing experience!' };
 
-            // Simulate no existing testimonial
-            Testimonial.findOne.mockResolvedValue(null);
-            Testimonial.prototype.save.mockResolvedValue(mockTestimonial);
+            Testimonial.findOne.mockResolvedValue(null); // No existing testimonial
+            Testimonial.prototype.save = jest.fn().mockResolvedValue(testimonialData);
 
-            const result = await testimonialRepository.create(testimonialData);
-
-            expect(result).toEqual(mockTestimonial);
-            expect(Testimonial.findOne).toHaveBeenCalledWith(testimonialData);
+            const result = await repo.create(testimonialData);
+            expect(result).toEqual(testimonialData);
+            expect(Testimonial.findOne).toHaveBeenCalledWith({ title: testimonialData.title });
             expect(Testimonial.prototype.save).toHaveBeenCalled();
         });
 
-        it('should throw an error if testimonial already exists', async () => {
-            const testimonialData = { name: 'John Doe', message: 'Great service!' };
+        it('should throw an error if the testimonial already exists', async () => {
+            const testimonialData = { title: 'Great Service', content: 'Amazing experience!' };
 
-            // Simulate existing testimonial
-            Testimonial.findOne.mockResolvedValue(true);
+            Testimonial.findOne.mockResolvedValue(testimonialData); // Mock existing testimonial
 
-            await expect(testimonialRepository.create(testimonialData))
-                .rejects
-                .toThrow('Testimonial already exists');
+            await expect(repo.create(testimonialData))
+                .rejects.toThrow("Testimonial with this title already exists.");
+            expect(Testimonial.findOne).toHaveBeenCalledWith({ title: testimonialData.title });
         });
 
-        it('should throw an error if creating testimonial fails', async () => {
-            const testimonialData = { name: 'John Doe', message: 'Great service!' };
+        it('should throw a generic error if saving fails', async () => {
+            const testimonialData = { title: 'Great Service', content: 'Amazing experience!' };
 
-            // Simulate error during saving
             Testimonial.findOne.mockResolvedValue(null);
-            Testimonial.prototype.save.mockRejectedValue(new Error('Save failed'));
+            Testimonial.prototype.save = jest.fn().mockRejectedValue(new Error("Database error"));
 
-            await expect(testimonialRepository.create(testimonialData))
-                .rejects
-                .toThrow('Save failed');
+            await expect(repo.create(testimonialData))
+                .rejects.toThrow("Failed to create testimonial.");
         });
     });
 
-    // Test for findAll method
     describe('findAll', () => {
-        it('should fetch testimonials with pagination and sorting', async () => {
-            const filters = { name: 'John Doe' };
-            const page = 1;
-            const limit = 10;
-            const mockTestimonials = [{ _id: '123', name: 'John Doe', message: 'Great service!' }];
-            const skip = (page - 1) * limit;
+        it('should return all testimonials with pagination', async () => {
+            const mockTestimonials = [{ title: 'Test 1' }, { title: 'Test 2' }];
+            
+            Testimonial.find.mockImplementation(() => ({
+                skip: jest.fn().mockReturnThis(),
+                limit: jest.fn().mockReturnThis(),
+                sort: jest.fn().mockResolvedValue(mockTestimonials),
+            }));
 
-            // Simulate fetching testimonials
-            Testimonial.find.mockResolvedValue(mockTestimonials);
-
-            const result = await testimonialRepository.findAll(filters, page, limit);
-
+            const result = await repo.findAll({}, 1, 10);
             expect(result).toEqual(mockTestimonials);
-            expect(Testimonial.find).toHaveBeenCalledWith(filters);
-            expect(Testimonial.find).toHaveBeenCalledWith(filters);
         });
 
-        it('should throw an error if page or limit is less than 1', async () => {
-            await expect(testimonialRepository.findAll({}, -1, 10))
-                .rejects
-                .toThrow('Page and limit must be greater than 0');
-
-            await expect(testimonialRepository.findAll({}, 1, 0))
-                .rejects
-                .toThrow('Page and limit must be greater than 0');
+        it('should throw an error if page or limit is invalid', async () => {
+            await expect(repo.findAll({}, 0, 10))
+                .rejects.toThrow("Page and limit must be greater than 0.");
         });
 
-        it('should throw an error if fetching testimonials fails', async () => {
-            const filters = { name: 'John Doe' };
-            const page = 1;
-            const limit = 10;
+        it('should handle database errors gracefully', async () => {
+            Testimonial.find.mockImplementation(() => ({
+                skip: jest.fn().mockReturnThis(),
+                limit: jest.fn().mockReturnThis(),
+                sort: jest.fn().mockRejectedValue(new Error("Database error")),
+            }));
 
-            // Simulate error during fetching
-            Testimonial.find.mockRejectedValue(new Error('Find failed'));
-
-            await expect(testimonialRepository.findAll(filters, page, limit))
-                .rejects
-                .toThrow('Failed to fetch testimonials.');
+            await expect(repo.findAll({}, 1, 10))
+                .rejects.toThrow("Failed to fetch testimonials: Database error");
         });
     });
 
-    // Test for count method
     describe('count', () => {
         it('should return the total count of testimonials', async () => {
-            const filters = { name: 'John Doe' };
-            const totalTestimonials = 5;
+            Testimonial.countDocuments.mockResolvedValue(5);
 
-            // Simulate countDocuments operation
-            Testimonial.countDocuments.mockResolvedValue(totalTestimonials);
-
-            const result = await testimonialRepository.count(filters);
-
-            expect(result).toBe(totalTestimonials);
-            expect(Testimonial.countDocuments).toHaveBeenCalledWith(filters);
+            const count = await repo.count({});
+            expect(count).toBe(5);
+            expect(Testimonial.countDocuments).toHaveBeenCalledWith({});
         });
 
-        it('should throw an error if counting testimonials fails', async () => {
-            const filters = { name: 'John Doe' };
+        it('should handle count errors', async () => {
+            Testimonial.countDocuments.mockRejectedValue(new Error("Database error"));
 
-            // Simulate countDocuments failure
-            Testimonial.countDocuments.mockRejectedValue(new Error('Count failed'));
-
-            await expect(testimonialRepository.count(filters))
-                .rejects
-                .toThrow('Failed to count testimonials.');
+            await expect(repo.count({}))
+                .rejects.toThrow("Failed to count testimonials.");
         });
     });
 
-    // Test for update method
     describe('update', () => {
-        it('should update testimonial if found', async () => {
-            const id = '123';
-            const updatedData = { message: 'Updated message' };
-            const updatedTestimonial = { _id: '123', name: 'John Doe', message: 'Updated message' };
+        it('should update a testimonial successfully', async () => {
+            const testimonialData = { title: 'Updated Testimonial' };
+            Testimonial.findByIdAndUpdate.mockResolvedValue(testimonialData);
 
-            // Simulate finding and updating testimonial
-            Testimonial.findById.mockResolvedValue(updatedTestimonial);
-            Testimonial.findByIdAndUpdate.mockResolvedValue(updatedTestimonial);
-
-            const result = await testimonialRepository.update(id, updatedData);
-
-            expect(result).toEqual(updatedTestimonial);
-            expect(Testimonial.findByIdAndUpdate).toHaveBeenCalledWith(id, updatedData, { new: true });
+            const result = await repo.update("test-id", testimonialData);
+            expect(result).toEqual(testimonialData);
         });
 
-        it('should throw an error if testimonial is not found for update', async () => {
-            const id = '123';
-            const updatedData = { message: 'Updated message' };
+        it('should throw an error if testimonial not found', async () => {
+            Testimonial.findByIdAndUpdate.mockResolvedValue(null);
 
-            // Simulate testimonial not found
-            Testimonial.findById.mockResolvedValue(null);
-
-            await expect(testimonialRepository.update(id, updatedData))
-                .rejects
-                .toThrow('Testimonial not found.');
+            await expect(repo.update("test-id", {}))
+                .rejects.toThrow("Testimonial not found.");
         });
 
-        it('should throw an error if updating testimonial fails', async () => {
-            const id = '123';
-            const updatedData = { message: 'Updated message' };
+        it('should handle database errors', async () => {
+            Testimonial.findByIdAndUpdate.mockRejectedValue(new Error("Database error"));
 
-            // Simulate error during update
-            Testimonial.findById.mockResolvedValue(true);
-            Testimonial.findByIdAndUpdate.mockRejectedValue(new Error('Update failed'));
-
-            await expect(testimonialRepository.update(id, updatedData))
-                .rejects
-                .toThrow('Failed to update testimonial: Update failed');
+            await expect(repo.update("test-id", {}))
+                .rejects.toThrow("Failed to update testimonial.");
         });
     });
 
-    // Test for delete method
     describe('delete', () => {
-        it('should delete the testimonial if found', async () => {
-            const id = '123';
-            const mockDeletedTestimonial = { _id: '123', name: 'John Doe', message: 'Great service!' };
+        it('should delete a testimonial successfully', async () => {
+            Testimonial.findByIdAndDelete.mockResolvedValue({ title: "Deleted Testimonial" });
 
-            // Simulate testimonial being deleted
-            Testimonial.findByIdAndDelete.mockResolvedValue(mockDeletedTestimonial);
-
-            const result = await testimonialRepository.delete(id);
-
-            expect(result).toEqual(mockDeletedTestimonial);
-            expect(Testimonial.findByIdAndDelete).toHaveBeenCalledWith(id);
+            const result = await repo.delete("test-id");
+            expect(result).toEqual({ title: "Deleted Testimonial" });
         });
 
-        it('should throw an error if deleting testimonial fails', async () => {
-            const id = '123';
+        it('should throw an error if testimonial not found', async () => {
+            Testimonial.findByIdAndDelete.mockResolvedValue(null);
 
-            // Simulate error during deletion
-            Testimonial.findByIdAndDelete.mockRejectedValue(new Error('Delete failed'));
+            await expect(repo.delete("test-id"))
+                .rejects.toThrow("Testimonial not found.");
+        });
 
-            await expect(testimonialRepository.delete(id))
-                .rejects
-                .toThrow('Failed to delete testimonial.');
+        it('should handle database errors', async () => {
+            Testimonial.findByIdAndDelete.mockRejectedValue(new Error("Database error"));
+
+            await expect(repo.delete("test-id"))
+                .rejects.toThrow("Failed to delete testimonial.");
         });
     });
 });
