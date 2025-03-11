@@ -12,30 +12,23 @@ class BlogController {
                 const { title, content, author, tags, status } = req.body;
                 const image = req.file ? req.file.buffer : null;
 
-                // Check for required fields
                 if (!title || !content || !author) {
-                    console.error("Missing fields:", { title, content, author });  // Debugging
                     return res.status(400).json({ error: "Title, content, and author are required." });
                 }
 
-                // Additional validation for content length
                 if (content.length < 10) {
-                    console.error("Validation failed: Blog content must be at least 10 characters long.");
                     return res.status(400).json({ error: "Blog content must be at least 10 characters long." });
                 }
 
                 const blogEntity = new BlogEntity({ title, content, author, tags, status, image });
 
-                // Validate the entity before saving
                 try {
                     blogEntity.validate();
                 } catch (validationError) {
-                    console.error("Validation failed:", validationError.message);
                     return res.status(400).json({ error: validationError.message });
                 }
 
                 const blog = await this.blogRepository.create(blogEntity);
-                console.log("Blog created successfully:", blog);
                 res.status(201).json(blog);
             } catch (error) {
                 console.error("Create blog error:", error.message);

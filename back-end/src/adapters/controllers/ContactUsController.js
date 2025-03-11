@@ -1,23 +1,29 @@
 const mongoose = require('mongoose');
-const ContactUsEntity = require('../../Domain/ContactUsEntity')
+const ContactUsEntity = require('../../Domain/ContactUsEntity');
 
 class ContactController {
     constructor(contactRepository) {
         this.contactRepository = contactRepository;
-
     }
 
     async createContact(req, res) {
         try {
             const { firstName, lastName, email, subject, message } = req.body;
 
-            const contactEntity = new ContactUsEntity({ firstName, lastName, email, subject, message });
-            contactEntity.validate(); 
+            if (!firstName || !lastName || !email || !subject || !message) {
+                return res.status(400).json({ message: "All fields are required." });
+            }
 
+            // Validate the contact entity
+            const contactEntity = new ContactUsEntity({ firstName, lastName, email, subject, message });
+            contactEntity.validate();
+
+            // Save contact
             const newMessage = await this.contactRepository.createContactUs({ firstName, lastName, email, subject, message });
 
             res.status(201).json(newMessage);
         } catch (err) {
+            console.error("Error in createContact:", err);
             res.status(400).json({ message: `Error: ${err.message}` });
         }
     }
@@ -30,12 +36,13 @@ class ContactController {
             const validatedLimit = Math.min(50, Math.max(1, parseInt(limit)));
             const validatedSortingOrder = sortingOrder === 'asc' ? 1 : -1;
 
-            const {contacts, totalItems} = await this.contactRepository.getContactsUs(
-              {page: validatedPage,
-              limit: validatedLimit ,
-              sortingOrder:validatedSortingOrder})
+            const { contacts, totalItems } = await this.contactRepository.getContactsUs({
+                page: validatedPage,
+                limit: validatedLimit,
+                sortingOrder: validatedSortingOrder,
+            });
 
-            const totalPages = Math.ceil(totalItems / limit);
+            const totalPages = Math.ceil(totalItems / validatedLimit);
 
             res.status(200).json({
                 pagination: {
@@ -44,7 +51,7 @@ class ContactController {
                     totalItems,
                     limit: validatedLimit,
                 },
-                data: { contacts },
+                data: contacts,
             });
         } catch (error) {
             console.error('Error in getContacts:', error);
@@ -60,8 +67,7 @@ class ContactController {
                 return res.status(400).json({ message: 'Invalid message ID' });
             }
 
-            const objectId = mongoose.Types.ObjectId(messageId);
-
+            const objectId = new mongoose.Types.ObjectId(messageId);
             const deletedMessage = await this.contactRepository.deleteContactUs(objectId);
 
             if (!deletedMessage) {
@@ -83,7 +89,8 @@ class ContactController {
                 return res.status(400).json({ message: 'Invalid message ID' });
             }
 
-            const contact = await this.contactRepository.getContactById(id);
+            const objectId = new mongoose.Types.ObjectId(id);
+            const contact = await this.contactRepository.getContactById(objectId);
 
             if (!contact) {
                 return res.status(404).json({ message: 'Contact not found' });

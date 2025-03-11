@@ -34,11 +34,11 @@ describe("BlogController Tests", () => {
         it("should return 201 if blog is created", async () => {
             req.body = { 
                 title: "Valid Title", 
-                content: "This is a valid blog content.",  // At least 10 characters!
+                content: "This is a valid blog content.", 
                 author: "Author Name" 
             };
-            
-            req.file = { buffer: Buffer.from("fake image data") };  // Simulating image upload
+
+            req.file = { buffer: Buffer.from("fake image data") };  
 
             const mockBlog = { ...req.body, id: "12345", image: req.file.buffer };
             blogRepository.create.mockResolvedValue(mockBlog);
