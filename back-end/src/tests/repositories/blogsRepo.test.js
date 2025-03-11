@@ -1,7 +1,7 @@
 const BlogRepository = require('../../Repositories/blogsRepo');
 const BlogModel = require('../../Infrastructures/models/blogModel');
 
-jest.mock('../../Infrastructures/models/blogModel'); // Mock Mongoose Model
+jest.mock('../../Infrastructures/models/blogModel'); 
 
 describe('BlogRepository', () => {
     let blogRepository;

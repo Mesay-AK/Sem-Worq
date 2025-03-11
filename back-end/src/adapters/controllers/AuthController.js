@@ -19,8 +19,9 @@ class AuthController {
             const existingAdmin = await this.adminRepository.findByEmail(adminEntity.email);
 
             if (existingAdmin) {
-                throw new Error("Admin with this email already exists.");
+                return res.status(409).json({ error: "Admin with this email already exists." });
             }
+
 
             const hashedPassword = await this.PasswordHelper.hashPassword(adminEntity.password);
 
@@ -40,13 +41,13 @@ class AuthController {
 
             const admin = await this.adminRepository.findByEmail(email);
             if (!admin) {
-                throw new Error("Invalid email or password.");
+                return res.status(401).json({ error: "Invalid email or password." });
             }
 
             const validated = await this.PasswordHelper.comparePassword(password, admin.password);
 
             if (!validated) {
-                throw new Error("Invalid email or password.");
+                return res.status(401).json({ error: "Invalid email or password." });
             }
 
             const accessToken = this.TokenHelper.generateAccessToken({ id: admin._id, role: admin.role, email:admin.email });
@@ -67,7 +68,6 @@ class AuthController {
                 path: '/',
             });
 
-            // console.log('generated token',accessToken)
 
             res.status(200).json({ token: accessToken, user: savedAdmin });
 
@@ -94,22 +94,31 @@ class AuthController {
         }
     }
 
-    async logout(req, res) {
-        try {
-            const { id } = req.params;
-            const refreshToken = req.cookies.refreshToken;
-            if (!refreshToken) {
-                throw new Error("Refresh token is required.");
-            }
-
-            await this.TokenHelper.validateRefreshToken(refreshToken);
-            await this.TokenHelper.deleteRefreshToken(id);
-            res.json({ message: "Logged out successfully." });
-            
-        } catch (error) {
-            res.status(400).json({ error: error.message });
+async logout(req, res) {
+    try {
+        const { id } = req.params;
+        const refreshToken = req.cookies.refreshToken;
+        
+        if (!refreshToken) {
+            return res.status(400).json({ error: "Refresh token is required." });
         }
+
+        const err = await this.TokenHelper.validateRefreshToken(refreshToken);
+        if (err) {
+            return res.status(401).json({ error: "Invalid refresh token." });
+        }
+
+        await this.TokenHelper.deleteRefreshToken(id);
+
+        res.clearCookie("refreshToken");
+        return res.json({ message: "Logged out successfully." });
+
+    } catch (error) {
+        console.error("Logout error:", error);
+        return res.status(500).json({ error: "Internal server error." });
     }
+}
+
 
     async resetPassword(req, res) {
     try {
