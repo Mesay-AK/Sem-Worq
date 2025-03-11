@@ -7,67 +7,95 @@ class PortfolioController {
 
     async listPortfolios(req, res) {
         try {
-            const page = parseInt(req.query.page, 10) || 1;
-            const limit = parseInt(req.query.limit, 10) || 10;
+            const { page = 1, limit = 10 } = req.query || {};  
 
-            const portfolios = await this.repository.findAll(page, limit);
+            const parsedPage = parseInt(page, 10);
+            const parsedLimit = parseInt(limit, 10);
+
+            if (isNaN(parsedPage) || parsedPage < 1) {
+                throw new Error("Page must be a positive integer.");
+            }
+
+            if (isNaN(parsedLimit) || parsedLimit < 1) {
+                throw new Error("Limit must be a positive integer.");
+            }
+
+            const portfolios = await this.repository.findAll(parsedPage, parsedLimit);
             const total = await this.repository.count();
 
             const result = {
                 portfolios,
                 pagination: {
-                    page,
-                    limit,
+                    page: parsedPage,
+                    limit: parsedLimit,
                     total,
-                    totalPages: Math.ceil(total / limit),
+                    totalPages: Math.ceil(total / parsedLimit),
                 },
             };
+
             res.json(result);
         } catch (error) {
             console.error("Error in PortfolioController.listPortfolios:", error);
-            res.status(400).json({ error: error.message });
+
+            return res.status(400).json({ error: error.message || "Database error" });
         }
     }
 
-    async getPortfolioById(req, res) {
-        try {
-            const { id } = req.params; 
-            const portfolio = await this.repository.findById(id); 
 
-            if (!portfolio) {
-                return res.status(404).json({ error: "Portfolio not found" });
-            }
+ async getPortfolioById(req, res) {
+    try {
+        const { id } = req.params;
 
-            const imageBase64 = portfolio.image 
-                ? `data:image/jpeg;base64,${portfolio.image.toString("base64")}` 
-                : null;
+        const portfolio = await this.repository.findById(id);
 
-            res.json({
-                ...portfolio.toObject(),  
-                image: imageBase64         
-            });
-        } catch (error) {
-            console.error("Error in PortfolioController.getPortfolioById:", error);
-            res.status(500).json({ error: "Failed to retrieve portfolio" });
+        if (!portfolio) {
+            return res.status(404).json({ error: "Portfolio not found" });
         }
+
+        // Convert Mongoose document to plain object before processing the image
+        const portfolioObj = portfolio.toObject();
+
+        const imageBase64 = portfolioObj.image
+            ? `data:image/jpeg;base64,${portfolioObj.image.toString("base64")}`
+            : null;
+
+        res.status(200).json({
+            ...portfolioObj,
+            image: imageBase64,
+        });
+    } catch (error) {
+        console.error("Error in PortfolioController.getPortfolioById:", error);
+        res.status(500).json({ error: "Failed to retrieve portfolio" });
     }
+}
+
+
 
     async createPortfolio(req, res) {
         try {
             const { title, description, tags, visibility } = req.body;
-            const image = req.file ? req.file.buffer : null; // Get image as Buffer
+            const image = req.file ? req.file.buffer : null; 
 
             const portfolioData = { title, description, tags, visibility, image };
             const portfolioEntity = new PortfolioEntity(portfolioData);
-            portfolioEntity.validate(); // Validating the entity
 
-            const result = await this.repository.create(portfolioData); // Save to DB
+            portfolioEntity.validate(); 
+
+            const result = await this.repository.create(portfolioData); 
+
             res.status(201).json(result);
         } catch (error) {
             console.error("Error in PortfolioController.createPortfolio:", error);
-            res.status(400).json({ error: error.message });
+
+            if (error.message.includes("must be")) {
+                return res.status(400).json({ error: error.message });
+            }
+
+            return res.status(400).json({ error: "Database error" });
         }
     }
+
+
 
     async updatePortfolio(req, res) {
         try {
