@@ -18,34 +18,27 @@ class ServiceController {
     const image = req.file ? req.file.buffer : null;
 
     if (!title || !description) {
-      console.log("Missing title or description"); // Debugging step
       return res.status(400).json({ message: "Title and description are required." });
     }
 
     if (!image) {
-      console.log("Missing image"); 
       return res.status(400).json({ message: "Image is required." });
     }
 
     const serviceEntity = new Service({ title, description, image });
-    console.log("Service entity created:", serviceEntity); 
 
     serviceEntity.validate(); 
 
     const newService = new Service(serviceEntity);
-    console.log("New service created:", newService); 
 
     const result = await this.serviceRepo.CreateService(newService);
-    console.log("Create service result:", result); // Debugging step
 
     res.status(201).json({ success: true, service: result });
   } catch (err) {
-    console.error("Controller error (createService):", err.message); // Debugging step
     res.status(500).json({ success: false, message: err.message });
   }
 }
 
-  // Update an existing service
   async updateService(req, res) {
     try {
       const { id } = req.params;
@@ -53,7 +46,7 @@ class ServiceController {
       const image = req.file ? req.file.buffer : null;
 
       if (image) {
-        updatedFields.image = image;  // If the image is provided, update it
+        updatedFields.image = image;  
       }
 
       if (!id) {
@@ -67,7 +60,6 @@ class ServiceController {
 
       res.status(200).json({ success: true, service: updatedService });
     } catch (err) {
-      console.error("Controller error (updateService):", err.message);
       res.status(err.message.includes("not found") ? 404 : 500).json({ success: false, message: err.message });
     }
   }
@@ -88,7 +80,6 @@ class ServiceController {
 
       res.status(200).json({ success: true, message: "Service deleted successfully", deletedService });
     } catch (err) {
-      console.error("Controller error (deleteService):", err.message);
       res.status(err.message.includes("not found") ? 404 : 500).json({ success: false, message: err.message });
     }
   }
@@ -118,7 +109,6 @@ class ServiceController {
 
     res.json(result);
   } catch (err) {
-    console.error("Controller error (listServices):", err.message);
     res.status(500).json({ success: false, message: "Unexpected error" });
   }
 }
@@ -150,7 +140,6 @@ class ServiceController {
         },
       });
     } catch (err) {
-      console.error("Controller error (getServiceById):", err.message);
       res.status(500).json({ success: false, message: err.message });
     }
   }

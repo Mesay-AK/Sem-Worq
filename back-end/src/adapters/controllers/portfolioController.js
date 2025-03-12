@@ -64,7 +64,7 @@ class PortfolioController {
             image: imageBase64,
         });
     } catch (error) {
-        console.error("Error in PortfolioController.getPortfolioById:", error);
+        console.error("Error in PortfolioController.getPortfolioById:", error.message, error.stack);
         res.status(500).json({ error: "Failed to retrieve portfolio" });
     }
 }

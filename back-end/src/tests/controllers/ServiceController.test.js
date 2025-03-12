@@ -104,7 +104,7 @@ describe("ServiceController", () => {
     });
 
     it("should return 400 if service ID is missing", async () => {
-      req.params = {}; // No ID
+      req.params = {};
 
       await controller.updateService(req, res);
 
