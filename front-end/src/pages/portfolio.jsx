@@ -1,8 +1,8 @@
 import React from "react";
-import "./components/layout.css"; 
-import image from "./assets/image.jpg";
-import Navbar from "./components/Navbar";
-import Portfolio from "./components/portfolio";
+import "./../components/layout.css"; 
+import image from "./../assets/image.jpg";
+import Navbar from "../components/Navbar";
+import Portfolio from "../components/portfolio";
 
 
 const MyPortfolio = () => {

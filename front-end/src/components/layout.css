@@ -1,4 +1,7 @@
 /* Layout container */
+
+@import "tailwindcss";
+
 .layout {
   position: relative;
   width: 100vw;

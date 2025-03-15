@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import image1 from "./assets/img1.jpg";
-import image2 from "./assets/img2.jpg";
-import image3 from "./assets/img3.jpg";
-import image4 from "./assets/img4.jpg";
-import image5 from "./assets/img5.jpg";
-import image6 from "./assets/img6.jpg";
+import image1 from "./../assets/img1.jpg";
+import image2 from "./../assets/img2.jpg";
+import image3 from "./../assets/img3.jpg";
+import image4 from "./../assets/img4.jpg";
+import image5 from "./../assets/img5.jpg";
+import image6 from "./../assets/img6.jpg";
 
 const Blog = () => {
   const [activeCategory, setActiveCategory] = useState("All Articles");

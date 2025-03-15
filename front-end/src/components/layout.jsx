@@ -1,7 +1,7 @@
 import React from "react";
 import "./layout.css"; 
-import image from "../assets/image.jpg";
-import Navbar from "./Navbar";
+import image from "./../assets/image.jpg";
+import Navbar from "./../Navbar";
 
 
 

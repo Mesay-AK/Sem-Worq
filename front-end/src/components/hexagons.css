@@ -1,3 +1,4 @@
+@import "tailwindcss";
 .hexagon {
   position: fixed;
   width: 100px;
