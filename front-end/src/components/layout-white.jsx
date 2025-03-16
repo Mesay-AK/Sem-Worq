@@ -1,5 +1,5 @@
 import React from "react";
-import "./layout-white.css"; // Ensure your CSS is correctly linked
+import "./layout-white.css"; 
 import image from "./../assets/image.jpg";
 import Navbar from "./../Navbar-white";
 

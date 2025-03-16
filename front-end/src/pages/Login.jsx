@@ -3,7 +3,7 @@
 import React from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 import logo from "./../assets/Logo.PNG"; 
-import Hexagons from "./../components/hexagons";
+import Hexagons from "./../components/Hexagons";
 
 function LoginPage() {
   return (

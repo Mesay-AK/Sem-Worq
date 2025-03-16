@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Dots from "./pagination-dots";
+import Dots from "./Pagination-dots";
 import img11 from "../assets/img11.jpg";
 import img12 from "../assets/img12.jpg";
 import img13 from "../assets/img13.jpg";

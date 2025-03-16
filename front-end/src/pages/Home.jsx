@@ -2,7 +2,7 @@ import React from "react";
 import "./../components/layout.css"; 
 import image from "./../assets/image.jpg";
 import Navbar from "./../components/Navbar";
-import Hexagons from "./../components/hexagons"
+import Hexagons from "./../components/Hexagons"
 
 
 const Home = () => {

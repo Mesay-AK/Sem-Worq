@@ -1,6 +1,6 @@
 import React from "react";
-import Card from "./card"; // Import the Card component
-import Dots from "./pagination-dots"; // Import the PaginationDots component
+import Card from "../components/card"; 
+import Dots from "../components/Pagination-dots"; 
 
 function Services() {
   return (
