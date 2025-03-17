@@ -2,7 +2,7 @@ import React from "react";
 import "./layout-white.css"; 
 import image from "./../assets/image.jpg";
 import Navbar from "./../Navbar-white";
-
+import "tailwindcss";
 
 const Layout_White = () => {
   const hexagons = [
