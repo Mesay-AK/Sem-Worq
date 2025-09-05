@@ -1,4 +1,4 @@
-const Redis = require('ioredis');
+ssgit const Redis = require('ioredis');
 
 const redisClient = new Redis({
     host: process.env.REDIS_HOST,  
