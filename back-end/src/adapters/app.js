@@ -1,49 +1,54 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
-const dotenv = require('dotenv')
-dotenv.config({ path: '../.env' });
+import express from "express";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
 
-const connectToDatabase = require('../Infrastructures/dataBase')
-const testimonyRoutes = require('./Routes/testimonyRoutes');
-const serviceRoutes = require('./Routes/ServiceRoutes');
-const contactRoutes = require('./Routes/ContactUsRoutes');
-const AuthRoutes = require('./Routes/AuthRoutes')
-const blogRoutes = require("./Routes/blogsRoutes")
-const portfloio = require('./Routes/portfolioRoutes');
+// Import Database and Routes
+import connectToDatabase from "../Infrastructures/dataBase.js";
+// nodemo
+import AuthRoutes from "./Routes/AuthRoutes.js";
+// import blogRoutes from "./Routes/blogsRoutes.js";
+// import portfloio from "./Routes/portfolioRoutes.js";
+
+dotenv.config({ path: "../.env" });
 
 const app = express();
+
+// Connect to MongoDB
 connectToDatabase();
 
-app.use(cors({
-  origin: 'http://localhost:5000', // Your frontend origin
-  credentials: true               // Required to send cookies
-}));
+// Middleware
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Point this to your Frontend
+    credentials: true,
+  }),
+);
 app.use(cookieParser());
-app.use(bodyParser.json()); 
-app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/sem&worq', AuthRoutes);
-app.use('/sem&worq/blogs', blogRoutes);
-app.use('/sem&worq/services', serviceRoutes);
-app.use('/sem&worq/testimony', testimonyRoutes); 
-app.use('/sem&worq/contacts', contactRoutes); 
-app.use('/sem&worq/portfolio', portfloio); 
+// Base Routes
+app.use("/sem&worq", AuthRoutes);
+// app.use("/sem&worq/blogs", blogRoutes);
+// app.use("/sem&worq/services", serviceRoutes);
+// app.use("/sem&worq/testimony", testimonyRoutes);
+// app.use("/sem&worq/contacts", contactRoutes);
+// app.use("/sem&worq/portfolio", portfloio);
 
+// Global Error Handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err.stack || err.message);
+  console.error("Error:", err.stack || err.message);
   res.status(err.status || 500).json({
     error: {
-      message: err.message || 'Internal Server Error',
+      message: err.message || "Internal Server Error",
     },
   });
 });
 
 const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Main Server running on port ${PORT}`));
 
-
-
-module.exports = app;
- 
+export default app;

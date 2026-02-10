@@ -1,5 +1,5 @@
-const Admin = require('../Infrastructures/models/AdminModel');
 
+import Admin from '../Infrastructures/models/AdminModel.js';
 
 class AdminRepository {
     async add(adminData) {
@@ -125,4 +125,4 @@ class AdminRepository {
 
 
 
-module.exports = AdminRepository;
+export default AdminRepository;

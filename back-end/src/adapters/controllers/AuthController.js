@@ -1,5 +1,6 @@
-const AdminEntity = require('../../Domain/AdminEntity');
-const crypto = require('crypto');
+import AdminEntity from '../../Domain/AdminEntity.js';
+import crypto from 'crypto';
+
 
 class AuthController {
     constructor(adminRepository, MailService, PasswordHelper, TokenHelper) {
@@ -55,7 +56,7 @@ class AuthController {
             const refreshToken = await this.TokenHelper.generateRefreshToken({ id: admin._id, email: admin.email });
 
             const savedAdmin = {
-                _id: admin.id,
+                _id: admin._id,
                 name:admin.name,
                 email:admin.email,
 
@@ -164,7 +165,7 @@ async logout(req, res) {
             }
 
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const expiryTime = Date.now() + 5 * 60 * 1000; 
+        const expiryTime = Date.now() + 10 * 60 * 1000; 
 
         await this.adminRepository.updateResetToken(admin._id, resetToken, expiryTime);
 
@@ -245,4 +246,4 @@ async update(req, res) {
 
 }
 
-module.exports = AuthController;
+export default AuthController;

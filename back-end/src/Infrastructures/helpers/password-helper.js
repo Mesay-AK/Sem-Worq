@@ -1,4 +1,5 @@
-const bcrypt = require('bcrypt');
+
+import bcrypt from 'bcrypt';
 
 class PasswordHelper {
     static async hashPassword(password) {
@@ -27,4 +28,4 @@ class PasswordHelper {
     }
 }
 
-module.exports = PasswordHelper;
+export default PasswordHelper;

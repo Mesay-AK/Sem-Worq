@@ -33,4 +33,4 @@ class AdminEntity {
 
 
 }
-module.exports = AdminEntity;
+export default AdminEntity;
